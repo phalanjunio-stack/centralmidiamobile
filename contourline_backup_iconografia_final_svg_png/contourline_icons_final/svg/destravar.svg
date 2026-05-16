@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>destravar</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <rect x="128" y="224" width="256" height="208" rx="24" />    <path d="M 176 224 V168 C176 120 212 88 256 88 C300 88 336 120 336 168" />
+  </g>
+</svg>

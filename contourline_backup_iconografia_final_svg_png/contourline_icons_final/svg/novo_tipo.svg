@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>novo_tipo</title>
+  <g stroke="#A7B2C3" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <rect x="128" y="128" width="256" height="256" rx="32" />    <line x1="256" y1="192" x2="256" y2="320" />    <line x1="192" y1="256" x2="320" y2="256" />
+  </g>
+</svg>

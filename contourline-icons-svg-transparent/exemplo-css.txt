@@ -1,0 +1,15 @@
+/* Exemplo de uso no app */
+.actionIcon {
+  width: 28px;
+  height: 28px;
+  color: #ffffff;
+  stroke-width: 2.2;
+}
+
+/* Card igual ao mockup */
+.actionCard {
+  border-radius: 22px;
+  background: linear-gradient(145deg, #1A66C7 0%, #0E315F 100%);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 14px 34px rgba(0,0,0,.28);
+}

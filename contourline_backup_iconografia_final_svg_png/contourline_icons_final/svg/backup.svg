@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>backup</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 160 384 H128 A72 72 0 0 1 128 240 A96 96 0 0 1 308 188 A80 80 0 0 1 400 240 A72 72 0 0 1 384 384 H352" />    <line x1="256" y1="384" x2="256" y2="232" />    <path d="M 200 288 L256 232 L312 288" />
+  </g>
+</svg>

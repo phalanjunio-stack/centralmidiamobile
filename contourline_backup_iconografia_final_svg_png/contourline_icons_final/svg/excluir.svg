@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>excluir</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 144 176 H368" />    <path d="M 192 176 V400 H320 V176" />    <path d="M 216 176 L232 128 H280 L296 176" />    <line x1="232" y1="232" x2="232" y2="344" />    <line x1="280" y1="232" x2="280" y2="344" />
+  </g>
+</svg>

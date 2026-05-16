@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>filtro</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 96 128 H416 L304 256 V400 L208 448 V256 Z" />
+  </g>
+</svg>

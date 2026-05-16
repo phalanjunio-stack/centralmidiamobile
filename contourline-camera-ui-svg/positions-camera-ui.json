@@ -1,0 +1,66 @@
+{
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "ratio": "9:16"
+  },
+  "header": {
+    "event_name": {
+      "x": 72,
+      "y": 100
+    },
+    "server_status": {
+      "x": 72,
+      "y": 150
+    },
+    "top_icons": {
+      "flash": {
+        "x": 735,
+        "y": 118
+      },
+      "flip_camera": {
+        "x": 840,
+        "y": 118
+      },
+      "settings": {
+        "x": 945,
+        "y": 118
+      }
+    }
+  },
+  "face_focus_frame": {
+    "x": 360,
+    "y": 500,
+    "width": 284,
+    "height": 384
+  },
+  "exposure_slider": {
+    "x": 42,
+    "y": 520,
+    "width": 90,
+    "height": 420
+  },
+  "mode_switch": {
+    "x": 410,
+    "y": 1355,
+    "width": 260,
+    "height": 64
+  },
+  "last_thumbnail": {
+    "x": 72,
+    "y": 1488,
+    "width": 116,
+    "height": 116
+  },
+  "capture_button": {
+    "center_x": 540,
+    "center_y": 1550,
+    "diameter": 210
+  },
+  "upload_status": {
+    "x": 828,
+    "y": 1508,
+    "width": 180,
+    "height": 84
+  }
+}

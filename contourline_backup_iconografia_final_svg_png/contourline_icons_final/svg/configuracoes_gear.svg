@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>configuracoes_gear</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <circle cx="256" cy="256" r="58" />    <path d="M 256 72 L286 72 L304 124 L344 140 L392 112 L416 136 L388 184 L404 224 L456 242 V274 L404 288 L388 328 L416 376 L392 400 L344 372 L304 388 L286 440 H226 L208 388 L168 372 L120 400 L96 376 L124 328 L108 288 L56 274 V242 L108 224 L124 184 L96 136 L120 112 L168 140 L208 124 L226 72 Z" />
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>flash_desativado</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 280 48 L144 280 H256 L224 464 L368 224 H256 Z" />    <line x1="128" y1="128" x2="384" y2="384" />
+  </g>
+</svg>

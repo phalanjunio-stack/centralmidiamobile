@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>drive</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 204 96 H308 L436 320 L384 416 H128 L76 320 Z" />    <path d="M 204 96 L76 320 M308 96 L436 320 M128 416 L256 192 L384 416" />
+  </g>
+</svg>

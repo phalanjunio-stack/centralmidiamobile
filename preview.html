@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Contourline Mobile — Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1c;
+    --bg-elev: #0f172a;
+    --card: #131b2e;
+    --card-elev: #1a2440;
+    --border: #1e2a44;
+    --text: #f1f5f9;
+    --text-mid: #cbd5e1;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --brand: #3b82f6;
+    --brand-faded: rgba(59, 130, 246, 0.12);
+    --brand-soft: #1e3a8a;
+    --camera: #1e40af;
+    --video: #7c3aed;
+    --gallery: #0d9488;
+    --docs: #ea580c;
+    --active: #10b981;
+    --active-bg: rgba(16, 185, 129, 0.12);
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --uploading: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: radial-gradient(ellipse at top, #1e293b 0%, #0a0f1c 70%);
+    min-height: 100vh;
+    padding: 40px 20px;
+    color: white;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: -0.8px;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: rgba(255,255,255,0.6);
+    font-size: 15px;
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.7);
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: white;
+    box-shadow: 0 6px 18px rgba(59,130,246,0.4);
+  }
+  .tab:hover:not(.active) {
+    background: rgba(255,255,255,0.12);
+  }
+
+  .phones {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  /* iPhone frame */
+  .phone {
+    width: 380px;
+    height: 800px;
+    background: #000;
+    border-radius: 48px;
+    padding: 12px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px #1a1a1a;
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 30px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 10;
+  }
+  .screen {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .status-bar {
+    height: 44px;
+    padding: 12px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+    z-index: 5;
+  }
+  .status-icons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 8px;
+  }
+  .scroll::-webkit-scrollbar { width: 0; }
+
+  /* ── Logo SVG ── */
+  .logo-icon {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  /* ── Home Screen ── */
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 16px 16px;
+  }
+  .brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand {
+    color: var(--text);
+    font-weight: 800;
+    font-size: 19px;
+    letter-spacing: -0.5px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .bell {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar-wrap {
+    position: relative;
+  }
+  .avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 19px;
+    border: 2px solid var(--brand);
+    background: var(--brand-soft) url('https://i.pravatar.cc/100?img=68') center/cover;
+  }
+  .online {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    background: var(--active);
+    border: 2px solid var(--bg);
+  }
+
+  .active-banner {
+    background: var(--active-bg);
+    border: 1px solid var(--active);
+    margin: 0 16px 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .active-banner .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background: var(--active);
+    box-shadow: 0 0 8px var(--active);
+    animation: pulse 1.5s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .active-banner .tag {
+    color: var(--active);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+  }
+  .active-banner .name {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .active-banner .info {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .active-banner .chev {
+    color: var(--muted);
+    font-size: 24px;
+    margin-left: auto;
+  }
+
+  .qr-card {
+    background: var(--card);
+    margin: 0 16px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .qr-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--brand-faded);
+    border: 1px solid var(--brand);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-card .title {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .qr-card .sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .qr-card .chev {
+    color: var(--muted);
+    font-size: 24px;
+    margin-left: auto;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    margin: 24px 0 12px;
+  }
+  .section-title {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .section-action {
+    color: var(--brand);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .events {
+    display: flex;
+    gap: 12px;
+    padding: 0 16px;
+    overflow-x: auto;
+  }
+  .events::-webkit-scrollbar { height: 0; }
+  .event-card {
+    flex-shrink: 0;
+    width: 200px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 10px;
+    border: 1px solid var(--border);
+  }
+  .event-cover {
+    width: 100%;
+    aspect-ratio: 16/10;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1e293b, #334155);
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .event-cover.ff { background: url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=300&h=200&fit=crop') center/cover; }
+  .event-cover.ce { background: url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=300&h=200&fit=crop') center/cover; }
+  .event-cover.wm { background: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=300&h=200&fit=crop') center/cover; }
+  .ev-active-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: var(--active-bg);
+    border: 1px solid var(--active);
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: var(--active);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(8px);
+  }
+  .ev-date-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(8px);
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .event-card .name {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+  }
+  .event-card .loc {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .event-card .owner-label {
+    color: var(--faint);
+    font-size: 10px;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .event-card .owner {
+    color: var(--text-mid);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .quick-grid {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px;
+  }
+  .quick-item {
+    flex: 1;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .quick-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+  }
+  .quick-icon.camera { background: var(--camera); }
+  .quick-icon.video { background: var(--video); }
+  .quick-icon.gallery { background: var(--gallery); }
+  .quick-icon.docs { background: var(--docs); }
+  .quick-label {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .quick-sub {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  .sync-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--card);
+    margin: 0 16px;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+  .progress-ring {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .progress-ring svg {
+    transform: rotate(-90deg);
+  }
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .progress-text .pct {
+    color: var(--text);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .progress-text .lbl {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .sync-stats {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stat-row .label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .stat-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    min-width: 28px;
+    text-align: right;
+  }
+  .stat-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stat-icon.green { background: rgba(16,185,129,0.15); }
+  .stat-icon.blue  { background: rgba(59,130,246,0.15); }
+  .stat-icon.yellow{ background: rgba(245,158,11,0.15); }
+  .stat-icon.red   { background: rgba(239,68,68,0.15); }
+
+  .meta-row {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px 0;
+  }
+  .meta-item {
+    flex: 1;
+    background: var(--card);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .meta-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .meta-value {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 1px;
+  }
+
+  .status-card {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin: 12px 16px 0;
+    padding: 14px;
+    background: var(--active-bg);
+    border: 1px solid var(--active);
+    border-radius: 14px;
+  }
+  .status-card .check-wrap {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    background: var(--active);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .status-card .title {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .status-card .sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  /* ── Bottom Tab Bar ── */
+  .tab-bar {
+    height: 85px;
+    background: var(--bg-elev);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 0 24px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .tab-item {
+    flex: 1;
+    text-align: center;
+    color: var(--muted);
+    padding: 6px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .tab-item.active { color: var(--brand); }
+  .tl { font-size: 10px; font-weight: 600; }
+  .tab-fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background: var(--brand);
+    margin-top: -16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.5);
+    border: 4px solid var(--bg-elev);
+  }
+
+  /* ── Event Detail ── */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 12px;
+  }
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 19px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+  }
+  .active-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--active-bg);
+    border: 1px solid var(--active);
+    padding: 7px 12px;
+    border-radius: 20px;
+    color: var(--active);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+  }
+  .active-pill .pdot {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--active);
+  }
+  .spacer { flex: 1; }
+
+  .event-head {
+    display: flex;
+    gap: 14px;
+    padding: 8px 16px;
+  }
+  .event-cover-big {
+    width: 130px;
+    height: 160px;
+    border-radius: 14px;
+    background: url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=300&h=400&fit=crop') center/cover;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  .event-head .info {
+    flex: 1;
+    padding-top: 4px;
+  }
+  .event-title {
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 26px;
+  }
+  .meta-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .meta-line .txt {
+    color: var(--text-mid);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .info-bar {
+    display: flex;
+    background: var(--card);
+    margin: 12px 16px 0;
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+  .info-col {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+  }
+  .info-col-label {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+  .info-col-value {
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .info-divider {
+    width: 1px;
+    background: var(--border);
+  }
+
+  .tabs-bar {
+    display: flex;
+    padding: 0 4px;
+    margin: 20px 0 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tabs-bar .t {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    position: relative;
+  }
+  .tabs-bar .t.active {
+    color: var(--brand);
+    font-weight: 700;
+  }
+  .tabs-bar .t.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: var(--brand);
+    border-radius: 1px;
+  }
+
+  .queue-item {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--card);
+    margin: 0 16px 8px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .queue-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: var(--card-elev);
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .queue-thumb.t1 { background-image: url('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&h=200&fit=crop'); }
+  .queue-thumb.t2 { background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=200&h=200&fit=crop'); }
+  .queue-thumb.t3 { background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=200&fit=crop'); }
+  .queue-thumb.t4 { background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200&h=200&fit=crop'); }
+  .queue-thumb.t5 { background-image: url('https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=200&h=200&fit=crop'); }
+
+  .queue-info { flex: 1; min-width: 0; }
+  .queue-name {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .queue-meta {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .queue-right {
+    text-align: right;
+  }
+  .uploading-text {
+    color: var(--brand);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .status-text { font-size: 11px; }
+  .status-text.pending { color: var(--muted); }
+  .status-text.error { color: var(--error); }
+  .progress-bar {
+    margin-top: 4px;
+    width: 90px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--brand);
+  }
+  .queue-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    background: var(--card-elev);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 16px;
+  }
+  .summary-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+  }
+  .summary-label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .summary-value {
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 800;
+  }
+  .summary-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Splash screen (idêntico ao electron splash) ── */
+  .splash {
+    background: linear-gradient(135deg, #020b18 0%, #0D2B4E 55%, #1A4A80 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding-top: 40px;
+  }
+  .splash::before {
+    content: "";
+    position: absolute;
+    top: 42%; left: 50%;
+    width: 600px; height: 600px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(46,125,209,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .splash-stage {
+    position: relative;
+    width: 200px; height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-outermost { position:absolute; inset:-20px; border-radius:50%; border: 1px solid rgba(91,164,229,0.08); }
+  .ring-outer    { position:absolute; inset:0;     border-radius:50%; border: 1px dashed rgba(255,255,255,0.10); animation: spinSlow 28s linear infinite; }
+  .ring-inner    { position:absolute; inset:16px;  border-radius:50%; border: 1px solid rgba(46,125,209,0.25); }
+  .arc {
+    position:absolute; inset:-20px; border-radius:50%;
+    border: 2px solid transparent;
+    border-top-color: rgba(91,164,229,0.85);
+    border-right-color: rgba(91,164,229,0.35);
+    animation: spinFast 1.6s cubic-bezier(0.4,0,0.2,1) infinite;
+  }
+  @keyframes spinSlow { to { transform: rotate(360deg); } }
+  @keyframes spinFast { to { transform: rotate(360deg); } }
+
+  .orbit-fast { position:absolute; inset:0; animation: spinSlow 2.8s linear infinite; }
+  .orbit-fast .dot {
+    position:absolute; top:-7px; left:50%; transform:translateX(-50%);
+    width:14px; height:14px; border-radius:50%;
+    background:#5BA4E5;
+    box-shadow: 0 0 14px 5px rgba(91,164,229,0.65);
+  }
+
+  .orbit-slow { position:absolute; inset:0; animation: spinSlow 16s linear infinite; }
+  .orbit-slow .dot {
+    position:absolute; top:-6px; left:50%; transform: translateX(-50%);
+    width:8px; height:8px; border-radius:50%;
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 0 6px 2px rgba(255,255,255,0.35);
+  }
+  .orbit-slow:nth-child(2) { animation-delay:  -4s; }
+  .orbit-slow:nth-child(3) { animation-delay:  -8s; }
+  .orbit-slow:nth-child(4) { animation-delay: -12s; }
+  .orbit-slow:nth-child(3) .dot,
+  .orbit-slow:nth-child(4) .dot {
+    width:6px; height:6px;
+    background: rgba(91,164,229,0.6);
+    box-shadow:none;
+  }
+
+  .splash-core {
+    position:relative; z-index:5;
+    width: 90px; height: 90px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .splash-core svg {
+    width: 70px; height: 70px;
+    filter: brightness(2) drop-shadow(0 0 18px rgba(91,164,229,0.55));
+    animation: breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1);    filter: brightness(2)   drop-shadow(0 0 18px rgba(91,164,229,0.55)); }
+    50%      { transform: scale(1.04); filter: brightness(2.3) drop-shadow(0 0 26px rgba(91,164,229,0.85)); }
+  }
+
+  .splash-title {
+    margin-top: 44px;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #fff;
+    text-align: center;
+  }
+  .splash-title em {
+    font-style: normal;
+    color: #5BA4E5;
+  }
+  .splash-ver {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 6px;
+  }
+
+  .splash-dots { display:flex; gap:6px; margin-top: 22px; }
+  .splash-dots span {
+    width:6px; height:6px; border-radius:50%;
+    background:#2E7DD1;
+    animation: bounce 1.4s ease-in-out infinite;
+  }
+  .splash-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .splash-dots span:nth-child(3) { animation-delay: 0.30s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
+    40%           { transform: translateY(-6px); opacity: 1;   }
+  }
+
+  .splash-footer {
+    position:absolute; bottom: 22px; left:0; right:0;
+    text-align:center;
+    color: rgba(255,255,255,0.28);
+    font-size: 11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .splash-footer svg { width:12px; height:12px; }
+
+  /* Gallery */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 0 16px;
+  }
+  .gallery-item {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background-color: var(--card-elev);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .g-star {
+    position: absolute;
+    top: 6px; right: 6px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+  }
+  .g-typebadge {
+    position: absolute;
+    bottom: 6px; left: 6px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7));
+  }
+  .g-videobadge {
+    position: absolute;
+    top: 6px; right: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  }
+  .gallery-bottombar {
+    position: absolute;
+    left: 0; right: 0; bottom: 85px;
+    background: var(--bg-elev);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px 16px;
+  }
+
+  /* footer */
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG defs (icones reusáveis) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- LOGO contourline (sol com raios) -->
+    <symbol id="i-logo" viewBox="0 0 40 40">
+      <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="20" cy="20" r="5"/>
+        <line x1="26" y1="20" x2="32" y2="20"/>
+        <line x1="14" y1="20" x2="8" y2="20"/>
+        <line x1="20" y1="26" x2="20" y2="32"/>
+        <line x1="20" y1="14" x2="20" y2="8"/>
+        <line x1="24.2" y1="24.2" x2="28.5" y2="28.5"/>
+        <line x1="15.8" y1="15.8" x2="11.5" y2="11.5"/>
+        <line x1="24.2" y1="15.8" x2="28.5" y2="11.5"/>
+        <line x1="15.8" y1="24.2" x2="11.5" y2="28.5"/>
+        <line x1="27.2" y1="22.3" x2="31" y2="23.5"/>
+        <line x1="12.8" y1="17.7" x2="9" y2="16.5"/>
+        <line x1="22.3" y1="27.2" x2="23.5" y2="31"/>
+        <line x1="17.7" y1="12.8" x2="16.5" y2="9"/>
+        <line x1="22.3" y1="12.8" x2="23.5" y2="9"/>
+        <line x1="17.7" y1="27.2" x2="16.5" y2="31"/>
+        <line x1="27.2" y1="17.7" x2="31" y2="16.5"/>
+        <line x1="12.8" y1="22.3" x2="9" y2="23.5"/>
+      </g>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
+      <path d="M10 21a2 2 0 004 0"/>
+    </symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <path d="M14 14h3v3M21 14v7M14 21h3M17 17h.01M21 17h.01M17 21h.01M21 21h.01"/>
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M3 9a2 2 0 012-2h2l1.5-2h7L17 7h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+      <circle cx="12" cy="13" r="3.5"/>
+    </symbol>
+    <symbol id="i-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <rect x="3" y="6" width="13" height="12" rx="2"/>
+      <path d="M16 10l5-3v10l-5-3v-4z"/>
+    </symbol>
+    <symbol id="i-gallery" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2"/>
+      <circle cx="8.5" cy="10" r="1.5" fill="currentColor"/>
+      <path d="M21 16l-5-5-7 7"/>
+    </symbol>
+    <symbol id="i-docs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z"/>
+      <path d="M14 3v6h6"/>
+      <path d="M8 13h8M8 17h6"/>
+    </symbol>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 11l9-7 9 7v9a1.5 1.5 0 01-1.5 1.5h-3.5a1 1 0 01-1-1V15a1 1 0 00-1-1h-4a1 1 0 00-1 1v5.5a1 1 0 01-1 1H4.5A1.5 1.5 0 013 20v-9z"/>
+    </symbol>
+    <symbol id="i-events" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <rect x="3" y="5" width="18" height="16" rx="2.5"/>
+      <path d="M3 10h18"/>
+      <path d="M8 3v4M16 3v4"/>
+      <circle cx="8" cy="15" r="1" fill="currentColor"/>
+      <circle cx="12" cy="15" r="1" fill="currentColor"/>
+      <circle cx="16" cy="15" r="1" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-uploads" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4v13M12 4l-5 5M12 4l5 5"/>
+      <path d="M4 17v2.5A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5V17"/>
+    </symbol>
+    <symbol id="i-profile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4.5 21c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <path d="M12 5v14M5 12h14"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12l5 5L20 7"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12a9 9 0 11-3-6.7L21 8"/>
+      <path d="M21 3v5h-5"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3 2"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l10 17H2L12 3z"/>
+      <path d="M12 10v4M12 17h.01"/>
+    </symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/>
+      <path d="M16 6l-4-4-4 4"/>
+      <path d="M12 2v14"/>
+    </symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="6" cy="12" r="1.2" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.2" fill="currentColor"/>
+      <circle cx="18" cy="12" r="1.2" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18l-6-6 6-6"/>
+    </symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="6" y="5" width="4" height="14" rx="1"/>
+      <rect x="14" y="5" width="4" height="14" rx="1"/>
+    </symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 9a15 15 0 0120 0"/>
+      <path d="M5 12.5a11 11 0 0114 0"/>
+      <path d="M8.5 16a6 6 0 017 0"/>
+      <circle cx="12" cy="19.5" r="1" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-calendar-dot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="header">
+  <h1>📱 Contourline Mobile — Preview</h1>
+  <p>Design real do app. Renderiza idêntico no celular.</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPair(0)">🖼️ Galeria</button>
+  <button class="tab" onclick="showPair(1)">⚡ Splash + Início</button>
+  <button class="tab" onclick="showPair(2)">🏠 Início + Evento</button>
+  <button class="tab" onclick="showPair(3)">📅 Eventos + Uploads</button>
+  <button class="tab" onclick="showPair(4)">👤 Setup + Perfil</button>
+</div>
+
+<!-- ─────────────── PAIR 0: Galeria ─────────────── -->
+<div class="phones" id="pair-0">
+  <div class="phone" style="width: 380px">
+    <div class="screen">
+      <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg></span></div>
+      <div class="scroll" style="padding-bottom: 180px">
+        <!-- Header -->
+        <div class="app-header">
+          <div class="brand-wrap">
+            <svg width="28" height="28" style="color: var(--text)"><use href="#i-logo"/></svg>
+            <span class="brand">contourline</span>
+          </div>
+          <div class="header-actions">
+            <div style="display:flex;align-items:center;justify-content:center;width:38px;height:38px"><svg width="20" height="20" style="color: var(--text)"><use href="#i-bell"/></svg></div>
+            <div class="avatar-wrap"><div class="avatar" style="border-color: var(--border)"></div><div class="online"></div></div>
+          </div>
+        </div>
+
+        <!-- Filter chips -->
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 16px 0;">
+          <div style="display:flex;gap:8px;overflow-x:auto;flex:1">
+            <div style="display:flex;align-items:center;gap:6px;padding:10px 16px;background:var(--brand);border-radius:12px;color:#fff;font-size:13px;font-weight:700;white-space:nowrap">Todas</div>
+            <div style="display:flex;align-items:center;gap:6px;padding:10px 14px;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap"><svg width="16" height="16" style="color:var(--muted)"><use href="#i-gallery"/></svg>Fotos</div>
+            <div style="display:flex;align-items:center;gap:6px;padding:10px 14px;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap"><svg width="16" height="16" style="color:var(--muted)"><use href="#i-video"/></svg>Vídeos</div>
+            <div style="display:flex;align-items:center;gap:6px;padding:10px 14px;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap"><svg width="16" height="16" style="color:var(--muted)"><use href="#i-docs"/></svg>Documentos</div>
+          </div>
+          <div style="width:44px;height:40px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="color:var(--muted)"><path d="M3 5h18l-7 9v6l-4-2v-4L3 5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Search + sort + view toggle -->
+        <div style="display:flex;align-items:center;gap:8px;padding:0 16px;margin-top:12px">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--border);padding:10px 12px;border-radius:12px;min-height:40px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="color:var(--muted)"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.5-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input style="flex:1;background:transparent;border:0;color:var(--text);font-size:13px;outline:none;font-family:inherit" placeholder="Buscar na galeria..."/>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);min-height:40px">
+            <span style="color:var(--muted);font-size:12px;font-weight:500">Mais recentes</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="color:var(--muted)"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="display:flex;border-radius:12px;overflow:hidden;border:1px solid var(--border)">
+            <div style="width:38px;height:40px;background:var(--brand);display:flex;align-items:center;justify-content:center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="#fff" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="#fff" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="#fff" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="#fff" stroke-width="1.8"/></svg>
+            </div>
+            <div style="width:38px;height:40px;display:flex;align-items:center;justify-content:center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group: Hoje -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px;margin-top:24px;margin-bottom:10px">
+          <div style="color:var(--text);font-size:15px;font-family:Inter;font-weight:700">
+            Hoje <span style="color:var(--faint);font-weight:400">  •  </span><span style="color:var(--muted);font-weight:500;font-size:13px">15 de maio de 2026</span>
+          </div>
+          <div style="color:var(--muted);font-size:12px;font-weight:500">128 itens</div>
+        </div>
+
+        <!-- Grid 3 colunas -->
+        <div class="gallery-grid">
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=400&fit=crop')">
+            <div class="g-star"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=400&h=400&fit=crop')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&h=400&fit=crop')">
+            <div class="g-videobadge">0:42 <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 17,12 10,16" fill="#fff"/></svg></div>
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="13" height="12" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><path d="M16 10l5-3v10l-5-3v-4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="rgba(0,0,0,0.5)"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&h=400&fit=crop')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&h=400&fit=crop')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=400&fit=crop')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop')">
+            <div class="g-videobadge">1:12 <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 17,12 10,16" fill="#fff"/></svg></div>
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="13" height="12" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><path d="M16 10l5-3v10l-5-3v-4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="rgba(0,0,0,0.5)"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1573164713988-8665fc963095?w=400&h=400&fit=crop')">
+            <div class="g-star"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=400&fit=crop')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=400&fit=crop')">
+            <div class="g-videobadge">0:30 <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 17,12 10,16" fill="#fff"/></svg></div>
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="13" height="12" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><path d="M16 10l5-3v10l-5-3v-4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="rgba(0,0,0,0.5)"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=400&fit=crop')">
+            <div class="g-star"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1559223607-a43c990c692c?w=400&h=400&fit=crop')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+        </div>
+
+        <!-- Group: Ontem -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px;margin-top:24px;margin-bottom:10px">
+          <div style="color:var(--text);font-size:15px;font-weight:700">
+            Ontem <span style="color:var(--faint);font-weight:400">  •  </span><span style="color:var(--muted);font-weight:500;font-size:13px">14 de maio de 2026</span>
+          </div>
+          <div style="color:var(--muted);font-size:12px;font-weight:500">96 itens</div>
+        </div>
+
+        <div class="gallery-grid">
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=400&fit=crop')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=400&fit=crop')">
+            <div class="g-star"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="gallery-item" style="background-image:url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=400&fit=crop&sat=2')">
+            <div class="g-typebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="rgba(0,0,0,0.5)"/><circle cx="8" cy="10" r="1.3" fill="#fff"/><path d="M21 16l-5-5-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+        </div>
+
+        <div style="height:32px"></div>
+      </div>
+
+      <!-- Bottom sync bar -->
+      <div class="gallery-bottombar">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <div style="width:36px;height:36px;border-radius:18px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#94a3b8" stroke-width="2"/></svg>
+          </div>
+          <div>
+            <div style="color:var(--text);font-size:13px;font-weight:700">Sincronização</div>
+            <div style="color:var(--muted);font-size:10px">Última: Hoje, 09:40</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:space-between">
+          <div style="flex:1">
+            <div style="color:var(--muted);font-size:10px">Enviados</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <span style="color:var(--text);font-size:18px;font-weight:800">124</span>
+              <div style="width:20px;height:20px;border-radius:6px;background:rgba(16,185,129,0.18);display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke="#10b981" stroke-width="3" stroke-linecap="round" fill="none"/></svg></div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="color:var(--muted);font-size:10px">Enviando</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <span style="color:var(--text);font-size:18px;font-weight:800">12</span>
+              <div style="width:20px;height:20px;border-radius:6px;background:rgba(59,130,246,0.18);display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-3-6.7L21 8" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/><path d="M21 3v5h-5" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/></svg></div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="color:var(--muted);font-size:10px">Pendentes</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <span style="color:var(--text);font-size:18px;font-weight:800">08</span>
+              <div style="width:20px;height:20px;border-radius:6px;background:rgba(245,158,11,0.18);display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#f59e0b" stroke-width="2"/><path d="M12 7v5l3 2" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/></svg></div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="color:var(--muted);font-size:10px">Com erro</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <span style="color:var(--text);font-size:18px;font-weight:800">02</span>
+              <div style="width:20px;height:20px;border-radius:6px;background:rgba(239,68,68,0.18);display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 3l10 17H2L12 3z" stroke="#ef4444" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-home"/></svg><div class="tl">Início</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-events"/></svg><div class="tl">Eventos</div></div>
+        <div class="tab-item"><div class="tab-fab"><svg width="28" height="28" style="color:#fff"><use href="#i-plus"/></svg></div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-uploads"/></svg><div class="tl">Uploads</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-profile"/></svg><div class="tl">Perfil</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── PAIR 1: Splash + Home ─────────────── -->
+<div class="phones" id="pair-1" style="display:none">
+
+  <!-- SPLASH -->
+  <div class="phone">
+    <div class="screen splash">
+      <div class="splash-stage">
+        <div class="ring-outermost"></div>
+        <div class="ring-outer"></div>
+        <div class="ring-inner"></div>
+        <div class="arc"></div>
+
+        <div class="orbit-fast"><div class="dot"></div></div>
+        <div class="orbit-slow"><div class="dot"></div></div>
+        <div class="orbit-slow"><div class="dot"></div></div>
+        <div class="orbit-slow"><div class="dot"></div></div>
+        <div class="orbit-slow"><div class="dot"></div></div>
+
+        <div class="splash-core">
+          <svg style="color:#fff"><use href="#i-logo"/></svg>
+        </div>
+      </div>
+
+      <div class="splash-title">Iniciando <em>galeria</em></div>
+      <div class="splash-ver">versão 1.0.0</div>
+      <div class="splash-dots"><span></span><span></span><span></span></div>
+
+      <div class="splash-footer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Seus dados estão protegidos
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span class="status-icons">
+          <svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg>
+        </span>
+      </div>
+
+      <div class="scroll">
+        <div class="app-header">
+          <div class="brand-wrap">
+            <svg width="26" height="26" style="color: var(--text)"><use href="#i-logo"/></svg>
+            <span class="brand">contourline</span>
+          </div>
+          <div class="header-actions">
+            <div class="bell">
+              <svg width="16" height="16" style="color: var(--text)"><use href="#i-bell"/></svg>
+            </div>
+            <div class="avatar-wrap">
+              <div class="avatar"></div>
+              <div class="online"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="active-banner">
+          <div class="dot"></div>
+          <div>
+            <div class="tag">EVENTO ATIVO</div>
+            <div class="name">FULL FACE 2026</div>
+            <div class="info">Dia 2 de 3 · 15-29/05</div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="qr-card">
+          <div class="qr-icon-box">
+            <svg width="24" height="24" style="color: var(--brand)"><use href="#i-qr"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="title">Escanear QR do evento</div>
+            <div class="sub">Aponte a câmera no QR do programa</div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Eventos recentes</div>
+          <div class="section-action">Ver todos</div>
+        </div>
+
+        <div class="events">
+          <div class="event-card">
+            <div class="event-cover ff">
+              <div class="ev-active-badge">ATIVO</div>
+              <div class="ev-date-badge">15/05 - 29/05</div>
+            </div>
+            <div class="name">FULL FACE 2026</div>
+            <div class="loc">📍 Distrito Anhembi</div>
+            <div class="loc">📍 São Paulo - SP</div>
+            <div class="owner-label">Você</div>
+            <div class="owner">Alan Junio</div>
+          </div>
+          <div class="event-card">
+            <div class="event-cover ce">
+              <div class="ev-date-badge">26/05 - 29/05</div>
+            </div>
+            <div class="name">Contourline Experience</div>
+            <div class="loc">📍 São Paulo - SP</div>
+            <div class="owner-label">Você</div>
+            <div class="owner">Alan Junio</div>
+          </div>
+          <div class="event-card">
+            <div class="event-cover wm">
+              <div class="ev-date-badge">01/06</div>
+            </div>
+            <div class="name">Work Market</div>
+            <div class="loc">📍 Remoto</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Ações rápidas</div>
+        </div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-icon camera">
+              <svg width="26" height="26" style="color:#fff"><use href="#i-camera"/></svg>
+            </div>
+            <div class="quick-label">Câmera</div>
+            <div class="quick-sub">Tirar foto</div>
+          </div>
+          <div class="quick-item">
+            <div class="quick-icon video">
+              <svg width="26" height="26" style="color:#fff"><use href="#i-video"/></svg>
+            </div>
+            <div class="quick-label">Vídeo</div>
+            <div class="quick-sub">Gravar</div>
+          </div>
+          <div class="quick-item">
+            <div class="quick-icon gallery">
+              <svg width="26" height="26" style="color:#fff"><use href="#i-gallery"/></svg>
+            </div>
+            <div class="quick-label">Galeria</div>
+            <div class="quick-sub">Selecionar</div>
+          </div>
+          <div class="quick-item">
+            <div class="quick-icon docs">
+              <svg width="26" height="26" style="color:#fff"><use href="#i-docs"/></svg>
+            </div>
+            <div class="quick-label">Docs</div>
+            <div class="quick-sub">Enviar</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Sincronização</div>
+        </div>
+
+        <div class="sync-card">
+          <div class="progress-ring">
+            <svg width="120" height="120">
+              <circle cx="60" cy="60" r="55" fill="none" stroke="#1e2a44" stroke-width="10"/>
+              <circle cx="60" cy="60" r="55" fill="none" stroke="#3b82f6" stroke-width="10"
+                      stroke-dasharray="345" stroke-dashoffset="83" stroke-linecap="round"/>
+            </svg>
+            <div class="progress-text">
+              <div class="pct">76%</div>
+              <div class="lbl">Enviado</div>
+            </div>
+          </div>
+          <div class="sync-stats">
+            <div class="stat-row">
+              <div class="label">Enviados</div>
+              <div class="stat-right">
+                <div class="stat-value" style="color:#10b981">124</div>
+                <div class="stat-icon green">
+                  <svg width="13" height="13" style="color:#10b981"><use href="#i-check"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="label">Enviando</div>
+              <div class="stat-right">
+                <div class="stat-value" style="color:#3b82f6">12</div>
+                <div class="stat-icon blue">
+                  <svg width="13" height="13" style="color:#3b82f6"><use href="#i-refresh"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="label">Pendentes</div>
+              <div class="stat-right">
+                <div class="stat-value" style="color:#f59e0b">08</div>
+                <div class="stat-icon yellow">
+                  <svg width="13" height="13" style="color:#f59e0b"><use href="#i-clock"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="label">Com erro</div>
+              <div class="stat-right">
+                <div class="stat-value" style="color:#ef4444">02</div>
+                <div class="stat-icon red">
+                  <svg width="13" height="13" style="color:#ef4444"><use href="#i-alert"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <div class="meta-item">
+            <svg width="18" height="18" style="color: var(--muted)"><use href="#i-clock"/></svg>
+            <div>
+              <div class="meta-label">Última sincronização</div>
+              <div class="meta-value">Hoje, 09:40</div>
+            </div>
+          </div>
+          <div class="meta-item">
+            <svg width="18" height="18" style="color: var(--active)"><use href="#i-wifi"/></svg>
+            <div>
+              <div class="meta-label">Conexão</div>
+              <div class="meta-value">Wi-Fi</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-card">
+          <div class="check-wrap">
+            <svg width="16" height="16" style="color:#fff"><use href="#i-check"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="title">Tudo certo!</div>
+            <div class="sub">Seus arquivos estão sendo enviados com sucesso.</div>
+          </div>
+        </div>
+
+        <div style="height: 20px"></div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <svg width="22" height="22" style="color: var(--brand)"><use href="#i-home"/></svg>
+          <div class="tl">Início</div>
+        </div>
+        <div class="tab-item">
+          <svg width="22" height="22" style="color: var(--muted)"><use href="#i-events"/></svg>
+          <div class="tl">Eventos</div>
+        </div>
+        <div class="tab-item">
+          <div class="tab-fab">
+            <svg width="28" height="28" style="color:#fff"><use href="#i-plus"/></svg>
+          </div>
+        </div>
+        <div class="tab-item">
+          <svg width="22" height="22" style="color: var(--muted)"><use href="#i-uploads"/></svg>
+          <div class="tl">Uploads</div>
+        </div>
+        <div class="tab-item">
+          <svg width="22" height="22" style="color: var(--muted)"><use href="#i-profile"/></svg>
+          <div class="tl">Perfil</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── PAIR 2: Home + Event Detail ─────────────── -->
+<div class="phones" id="pair-2" style="display:none">
+
+  <!-- HOME (mesma de pair-0, repete pra comparação) -->
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg></span></div>
+      <div class="scroll">
+        <div class="app-header">
+          <div class="brand-wrap">
+            <svg width="26" height="26" style="color: var(--text)"><use href="#i-logo"/></svg>
+            <span class="brand">contourline</span>
+          </div>
+          <div class="header-actions">
+            <div class="bell"><svg width="16" height="16" style="color: var(--text)"><use href="#i-bell"/></svg></div>
+            <div class="avatar-wrap"><div class="avatar"></div><div class="online"></div></div>
+          </div>
+        </div>
+        <div class="active-banner">
+          <div class="dot"></div>
+          <div><div class="tag">EVENTO ATIVO</div><div class="name">FULL FACE 2026</div><div class="info">Dia 2 de 3 · 15-29/05</div></div>
+          <div class="chev">›</div>
+        </div>
+        <div class="qr-card">
+          <div class="qr-icon-box"><svg width="24" height="24" style="color: var(--brand)"><use href="#i-qr"/></svg></div>
+          <div style="flex:1"><div class="title">Escanear QR do evento</div><div class="sub">Aponte a câmera no QR do programa</div></div>
+          <div class="chev">›</div>
+        </div>
+        <div class="section-header"><div class="section-title">Eventos recentes</div><div class="section-action">Ver todos</div></div>
+        <div class="events">
+          <div class="event-card">
+            <div class="event-cover ff"><div class="ev-active-badge">ATIVO</div><div class="ev-date-badge">15/05 - 29/05</div></div>
+            <div class="name">FULL FACE 2026</div><div class="loc">📍 Distrito Anhembi</div><div class="loc">📍 São Paulo - SP</div>
+            <div class="owner-label">Você</div><div class="owner">Alan Junio</div>
+          </div>
+          <div class="event-card">
+            <div class="event-cover ce"><div class="ev-date-badge">26/05 - 29/05</div></div>
+            <div class="name">Contourline Experience</div><div class="loc">📍 São Paulo - SP</div>
+            <div class="owner-label">Você</div><div class="owner">Alan Junio</div>
+          </div>
+        </div>
+        <div class="section-header"><div class="section-title">Ações rápidas</div></div>
+        <div class="quick-grid">
+          <div class="quick-item"><div class="quick-icon camera"><svg width="26" height="26" style="color:#fff"><use href="#i-camera"/></svg></div><div class="quick-label">Câmera</div><div class="quick-sub">Tirar foto</div></div>
+          <div class="quick-item"><div class="quick-icon video"><svg width="26" height="26" style="color:#fff"><use href="#i-video"/></svg></div><div class="quick-label">Vídeo</div><div class="quick-sub">Gravar</div></div>
+          <div class="quick-item"><div class="quick-icon gallery"><svg width="26" height="26" style="color:#fff"><use href="#i-gallery"/></svg></div><div class="quick-label">Galeria</div><div class="quick-sub">Selecionar</div></div>
+          <div class="quick-item"><div class="quick-icon docs"><svg width="26" height="26" style="color:#fff"><use href="#i-docs"/></svg></div><div class="quick-label">Docs</div><div class="quick-sub">Enviar</div></div>
+        </div>
+        <div class="section-header"><div class="section-title">Sincronização</div></div>
+        <div class="sync-card">
+          <div class="progress-ring">
+            <svg width="120" height="120">
+              <circle cx="60" cy="60" r="55" fill="none" stroke="#1e2a44" stroke-width="10"/>
+              <circle cx="60" cy="60" r="55" fill="none" stroke="#3b82f6" stroke-width="10" stroke-dasharray="345" stroke-dashoffset="83" stroke-linecap="round"/>
+            </svg>
+            <div class="progress-text"><div class="pct">76%</div><div class="lbl">Enviado</div></div>
+          </div>
+          <div class="sync-stats">
+            <div class="stat-row"><div class="label">Enviados</div><div class="stat-right"><div class="stat-value" style="color:#10b981">124</div><div class="stat-icon green"><svg width="13" height="13" style="color:#10b981"><use href="#i-check"/></svg></div></div></div>
+            <div class="stat-row"><div class="label">Enviando</div><div class="stat-right"><div class="stat-value" style="color:#3b82f6">12</div><div class="stat-icon blue"><svg width="13" height="13" style="color:#3b82f6"><use href="#i-refresh"/></svg></div></div></div>
+            <div class="stat-row"><div class="label">Pendentes</div><div class="stat-right"><div class="stat-value" style="color:#f59e0b">08</div><div class="stat-icon yellow"><svg width="13" height="13" style="color:#f59e0b"><use href="#i-clock"/></svg></div></div></div>
+            <div class="stat-row"><div class="label">Com erro</div><div class="stat-right"><div class="stat-value" style="color:#ef4444">02</div><div class="stat-icon red"><svg width="13" height="13" style="color:#ef4444"><use href="#i-alert"/></svg></div></div></div>
+          </div>
+        </div>
+        <div class="status-card" style="margin-top:16px">
+          <div class="check-wrap"><svg width="16" height="16" style="color:#fff"><use href="#i-check"/></svg></div>
+          <div style="flex:1"><div class="title">Tudo certo!</div><div class="sub">Seus arquivos estão sendo enviados.</div></div>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item active"><svg width="22" height="22" style="color: var(--brand)"><use href="#i-home"/></svg><div class="tl">Início</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-events"/></svg><div class="tl">Eventos</div></div>
+        <div class="tab-item"><div class="tab-fab"><svg width="28" height="28" style="color:#fff"><use href="#i-plus"/></svg></div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-uploads"/></svg><div class="tl">Uploads</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-profile"/></svg><div class="tl">Perfil</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENT DETAIL -->
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg></span></div>
+      <div class="scroll">
+        <div class="top-bar">
+          <div class="icon-btn"><svg width="18" height="18" style="color: var(--text)"><use href="#i-back"/></svg></div>
+          <div class="active-pill"><div class="pdot"></div>ATIVO</div>
+          <div class="spacer"></div>
+          <div class="icon-btn"><svg width="18" height="18" style="color: var(--text)"><use href="#i-share"/></svg></div>
+          <div class="icon-btn"><svg width="18" height="18" style="color: var(--text)"><use href="#i-more"/></svg></div>
+        </div>
+        <div class="event-head">
+          <div class="event-cover-big"></div>
+          <div class="info">
+            <div class="event-title">FULL FACE 2026</div>
+            <div class="meta-line">📅 <span class="txt">15/05/2026 até 29/05/2026</span></div>
+            <div class="meta-line">📍 <span class="txt">Distrito Anhembi</span></div>
+            <div class="meta-line">🗺 <span class="txt">São Paulo - SP</span></div>
+          </div>
+        </div>
+        <div class="info-bar">
+          <div class="info-col"><div class="info-col-label">Tipo</div><div class="info-col-value">Corporativo</div></div>
+          <div class="info-divider"></div>
+          <div class="info-col"><div class="info-col-label">Responsável</div><div class="info-col-value">Alan Junio</div></div>
+          <div class="info-divider"></div>
+          <div class="info-col"><div class="info-col-label">Pasta</div><div class="info-col-value">01. BRUTO/AUTO</div></div>
+        </div>
+        <div class="tabs-bar">
+          <div class="t active">Visão geral</div>
+          <div class="t">Mídia</div>
+          <div class="t">Equipe</div>
+          <div class="t">Informações</div>
+        </div>
+        <div class="section-header" style="margin-top:20px"><div class="section-title">Ações rápidas</div></div>
+        <div class="quick-grid">
+          <div class="quick-item"><div class="quick-icon camera"><svg width="26" height="26" style="color:#fff"><use href="#i-camera"/></svg></div><div class="quick-label">Câmera</div><div class="quick-sub">Tirar foto</div></div>
+          <div class="quick-item"><div class="quick-icon video"><svg width="26" height="26" style="color:#fff"><use href="#i-video"/></svg></div><div class="quick-label">Vídeo</div><div class="quick-sub">Gravar</div></div>
+          <div class="quick-item"><div class="quick-icon gallery"><svg width="26" height="26" style="color:#fff"><use href="#i-gallery"/></svg></div><div class="quick-label">Galeria</div><div class="quick-sub">Selecionar</div></div>
+          <div class="quick-item"><div class="quick-icon docs"><svg width="26" height="26" style="color:#fff"><use href="#i-docs"/></svg></div><div class="quick-label">Docs</div><div class="quick-sub">Enviar</div></div>
+        </div>
+        <div class="section-header"><div class="section-title">Fila de envio</div><div class="section-action">Ver todos</div></div>
+        <div class="queue-item">
+          <div class="queue-thumb t1"></div>
+          <div class="queue-info"><div class="queue-name">DSC_0321.JPG</div><div class="queue-meta">2.4 MB · Foto</div></div>
+          <div class="queue-right"><div class="uploading-text">Enviando 72%</div><div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div></div>
+          <div class="queue-action"><svg width="13" height="13" style="color: var(--muted)"><use href="#i-pause"/></svg></div>
+        </div>
+        <div class="queue-item">
+          <div class="queue-thumb t2"></div>
+          <div class="queue-info"><div class="queue-name">VID_2026.MP4</div><div class="queue-meta">124 MB · Vídeo</div></div>
+          <div class="queue-right"><div class="uploading-text">Enviando 45%</div><div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div></div>
+          <div class="queue-action"><svg width="13" height="13" style="color: var(--muted)"><use href="#i-pause"/></svg></div>
+        </div>
+        <div class="queue-item">
+          <div class="queue-thumb t3"></div>
+          <div class="queue-info"><div class="queue-name">DSC_0322.JPG</div><div class="queue-meta">2.1 MB · Foto</div></div>
+          <div class="queue-right"><div class="status-text pending">Pendente</div></div>
+          <div class="queue-action"><svg width="13" height="13" style="color: var(--muted)"><use href="#i-clock"/></svg></div>
+        </div>
+        <div class="queue-item">
+          <div class="queue-thumb t4"></div>
+          <div class="queue-info"><div class="queue-name">DSC_0323.JPG</div><div class="queue-meta">1.8 MB · Foto</div></div>
+          <div class="queue-right"><div class="status-text pending">Pendente</div></div>
+          <div class="queue-action"><svg width="13" height="13" style="color: var(--muted)"><use href="#i-clock"/></svg></div>
+        </div>
+        <div class="queue-item">
+          <div class="queue-thumb t5"></div>
+          <div class="queue-info"><div class="queue-name">VID_2025.MP4</div><div class="queue-meta">82 MB · Vídeo</div></div>
+          <div class="queue-right"><div class="status-text error">Erro</div></div>
+          <div class="queue-action" style="color:var(--error)"><svg width="13" height="13" style="color: var(--error)"><use href="#i-refresh"/></svg></div>
+        </div>
+        <div class="section-header"><div class="section-title">Resumo</div><div class="section-action">🗓 Hoje ▾</div></div>
+        <div class="summary-grid">
+          <div class="summary-card"><div class="summary-label">Enviados</div><div class="summary-row"><div class="summary-value">124</div><div class="summary-icon" style="background:rgba(16,185,129,0.15)"><svg width="14" height="14" style="color:#10b981"><use href="#i-check"/></svg></div></div></div>
+          <div class="summary-card"><div class="summary-label">Enviando</div><div class="summary-row"><div class="summary-value">12</div><div class="summary-icon" style="background:rgba(59,130,246,0.15)"><svg width="14" height="14" style="color:#3b82f6"><use href="#i-refresh"/></svg></div></div></div>
+          <div class="summary-card"><div class="summary-label">Pendentes</div><div class="summary-row"><div class="summary-value">08</div><div class="summary-icon" style="background:rgba(245,158,11,0.15)"><svg width="14" height="14" style="color:#f59e0b"><use href="#i-clock"/></svg></div></div></div>
+          <div class="summary-card"><div class="summary-label">Com erro</div><div class="summary-row"><div class="summary-value">02</div><div class="summary-icon" style="background:rgba(239,68,68,0.15)"><svg width="14" height="14" style="color:#ef4444"><use href="#i-alert"/></svg></div></div></div>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item active"><svg width="22" height="22" style="color: var(--brand)"><use href="#i-home"/></svg><div class="tl">Início</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-events"/></svg><div class="tl">Eventos</div></div>
+        <div class="tab-item"><div class="tab-fab"><svg width="28" height="28" style="color:#fff"><use href="#i-plus"/></svg></div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-uploads"/></svg><div class="tl">Uploads</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-profile"/></svg><div class="tl">Perfil</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── PAIR 3: Events + Uploads ─────────────── -->
+<div class="phones" id="pair-3" style="display:none">
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg></span></div>
+      <div class="scroll">
+        <div class="app-header">
+          <div class="brand" style="font-size:24px">Eventos</div>
+          <div class="qr-icon-box" style="width:40px;height:40px"><svg width="20" height="20" style="color: var(--brand)"><use href="#i-qr"/></svg></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;background:var(--card);margin:0 16px 16px;padding:0 14px;border-radius:12px;border:1px solid var(--border)">
+          <span style="font-size:14px">🔍</span>
+          <input style="flex:1;background:transparent;border:0;color:var(--text);padding:12px 0;font-family:inherit;font-size:14px;outline:none" placeholder="Buscar evento" />
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 16px">
+          <div style="width:8px;height:8px;border-radius:4px;background:#10b981"></div>
+          <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:0.8px;flex:1">ATIVOS AGORA</div>
+          <div style="color:var(--faint);font-size:12px;font-weight:600">2</div>
+        </div>
+        <div class="queue-item" style="margin-bottom:6px">
+          <div style="width:60px;height:60px;border-radius:8px;background:url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=200&fit=crop') center/cover"></div>
+          <div class="queue-info">
+            <div class="queue-name" style="font-size:14px;font-weight:700">FULL FACE 2026</div>
+            <div class="queue-meta">15/05/2026 até 29/05/2026</div>
+            <div class="queue-meta">📍 Distrito Anhembi</div>
+          </div>
+          <div style="width:32px;height:32px;border-radius:16px;background:var(--active);display:flex;align-items:center;justify-content:center"><svg width="14" height="14" style="color:#fff"><use href="#i-check"/></svg></div>
+        </div>
+        <div class="queue-item">
+          <div style="width:60px;height:60px;border-radius:8px;background:url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=200&h=200&fit=crop') center/cover"></div>
+          <div class="queue-info">
+            <div class="queue-name" style="font-size:14px;font-weight:700">Contourline Experience</div>
+            <div class="queue-meta">26/05/2026 até 29/05/2026</div>
+            <div class="queue-meta">📍 São Paulo - SP</div>
+          </div>
+          <div style="padding:8px 12px;background:var(--brand-faded);border:1px solid var(--brand);border-radius:8px;color:var(--brand);font-size:12px;font-weight:700">Ativar</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 16px 8px">
+          <div style="width:8px;height:8px;border-radius:4px;background:#f59e0b"></div>
+          <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:0.8px;flex:1">PRÓXIMOS</div>
+          <div style="color:var(--faint);font-size:12px;font-weight:600">1</div>
+        </div>
+        <div class="queue-item">
+          <div style="width:60px;height:60px;border-radius:8px;background:url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop') center/cover"></div>
+          <div class="queue-info">
+            <div class="queue-name" style="font-size:14px;font-weight:700">Work Market</div>
+            <div class="queue-meta">01/06/2026</div>
+            <div class="queue-meta">📍 Remoto</div>
+          </div>
+          <div style="padding:8px 12px;background:var(--brand-faded);border:1px solid var(--brand);border-radius:8px;color:var(--brand);font-size:12px;font-weight:700">Ativar</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 16px 8px">
+          <div style="width:8px;height:8px;border-radius:4px;background:var(--muted)"></div>
+          <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:0.8px;flex:1">ENCERRADOS</div>
+          <div style="color:var(--faint);font-size:12px;font-weight:600">5</div>
+        </div>
+        <div class="queue-item" style="opacity:0.6">
+          <div style="width:60px;height:60px;border-radius:8px;background:var(--card-elev)"></div>
+          <div class="queue-info"><div class="queue-name" style="font-size:14px;font-weight:700">Workshop Branding</div><div class="queue-meta">10/05/2026</div></div>
+        </div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-home"/></svg><div class="tl">Início</div></div>
+        <div class="tab-item active"><svg width="22" height="22" style="color: var(--brand)"><use href="#i-events"/></svg><div class="tl">Eventos</div></div>
+        <div class="tab-item"><div class="tab-fab"><svg width="28" height="28" style="color:#fff"><use href="#i-plus"/></svg></div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-uploads"/></svg><div class="tl">Uploads</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-profile"/></svg><div class="tl">Perfil</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg></span></div>
+      <div class="scroll">
+        <div class="app-header">
+          <div class="brand" style="font-size:24px">Uploads</div>
+          <div style="padding:8px 14px;background:var(--brand);border-radius:10px;color:white;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px"><svg width="13" height="13" style="color:#fff"><use href="#i-refresh"/></svg>Sincronizar</div>
+        </div>
+        <div style="display:flex;gap:10px;padding:0 16px 8px">
+          <div style="flex:1;background:var(--card);padding:12px;border-radius:12px;text-align:center;border:1px solid var(--border)">
+            <div style="color:#3b82f6;font-size:22px;font-weight:800">1.247</div>
+            <div style="color:var(--muted);font-size:11px">Total</div>
+          </div>
+          <div style="flex:1;background:var(--card);padding:12px;border-radius:12px;text-align:center;border:1px solid var(--border)">
+            <div style="color:#10b981;font-size:22px;font-weight:800">124</div>
+            <div style="color:var(--muted);font-size:11px">Hoje</div>
+          </div>
+          <div style="flex:1;background:var(--card);padding:12px;border-radius:12px;text-align:center;border:1px solid var(--border)">
+            <div style="color:#ef4444;font-size:22px;font-weight:800">2</div>
+            <div style="color:var(--muted);font-size:11px">Erros</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;padding:8px 16px;overflow-x:auto">
+          <div style="padding:8px 16px;background:var(--brand-faded);border:1px solid var(--brand);border-radius:18px;color:var(--brand);font-size:13px;font-weight:700;white-space:nowrap">Tudo</div>
+          <div style="padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:18px;color:var(--muted);font-size:13px;font-weight:500;white-space:nowrap">Fotos</div>
+          <div style="padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:18px;color:var(--muted);font-size:13px;font-weight:500;white-space:nowrap">Vídeos</div>
+          <div style="padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:18px;color:var(--muted);font-size:13px;font-weight:500;white-space:nowrap">Erros</div>
+        </div>
+        <div style="color:var(--muted);font-size:11px;letter-spacing:0.8px;font-weight:700;padding:16px 16px 8px">HOJE</div>
+        <div class="queue-item" style="margin-bottom:6px">
+          <div style="width:6px;height:6px;border-radius:3px;background:var(--active);flex-shrink:0"></div>
+          <div style="width:40px;height:40px;border-radius:8px;background:url('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&h=200&fit=crop') center/cover"></div>
+          <div class="queue-info"><div class="queue-name">IMG_2347.jpg</div><div class="queue-meta">14:32 · 2.4 MB · FULL FACE 2026</div></div>
+          <div style="color:var(--active)"><svg width="18" height="18" style="color:#10b981"><use href="#i-check"/></svg></div>
+        </div>
+        <div class="queue-item" style="margin-bottom:6px">
+          <div style="width:6px;height:6px;border-radius:3px;background:var(--active);flex-shrink:0"></div>
+          <div style="width:40px;height:40px;border-radius:8px;background:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=200&h=200&fit=crop') center/cover"></div>
+          <div class="queue-info"><div class="queue-name">VID_2024.mp4</div><div class="queue-meta">14:25 · 87 MB · FULL FACE 2026</div></div>
+          <div style="color:var(--active)"><svg width="18" height="18" style="color:#10b981"><use href="#i-check"/></svg></div>
+        </div>
+        <div class="queue-item" style="margin-bottom:6px">
+          <div style="width:6px;height:6px;border-radius:3px;background:var(--error);flex-shrink:0"></div>
+          <div style="width:40px;height:40px;border-radius:8px;background:url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=200&fit=crop') center/cover"></div>
+          <div class="queue-info"><div class="queue-name">VID_2023.mp4</div><div class="queue-meta">14:10 · 142 MB · timeout</div><div style="color:var(--error);font-size:11px;margin-top:2px">Network timeout</div></div>
+          <div style="color:var(--error)"><svg width="18" height="18" style="color:#ef4444"><use href="#i-alert"/></svg></div>
+        </div>
+        <div class="queue-item" style="margin-bottom:6px">
+          <div style="width:6px;height:6px;border-radius:3px;background:var(--active);flex-shrink:0"></div>
+          <div style="width:40px;height:40px;border-radius:8px;background:url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200&h=200&fit=crop') center/cover"></div>
+          <div class="queue-info"><div class="queue-name">IMG_2346.jpg</div><div class="queue-meta">14:02 · 3.1 MB · FULL FACE 2026</div></div>
+          <div style="color:var(--active)"><svg width="18" height="18" style="color:#10b981"><use href="#i-check"/></svg></div>
+        </div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-home"/></svg><div class="tl">Início</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-events"/></svg><div class="tl">Eventos</div></div>
+        <div class="tab-item"><div class="tab-fab"><svg width="28" height="28" style="color:#fff"><use href="#i-plus"/></svg></div></div>
+        <div class="tab-item active"><svg width="22" height="22" style="color: var(--brand)"><use href="#i-uploads"/></svg><div class="tl">Uploads</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-profile"/></svg><div class="tl">Perfil</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── PAIR 4: Setup + Profile ─────────────── -->
+<div class="phones" id="pair-4" style="display:none">
+  <div class="phone">
+    <div class="screen" style="background: radial-gradient(ellipse at top, #1e293b 0%, #0a0f1c 70%)">
+      <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg></span></div>
+      <div class="scroll" style="padding:32px 24px">
+        <div style="text-align:center;padding-top:24px">
+          <div style="width:80px;height:80px;border-radius:20px;background:var(--brand-faded);border:1px solid var(--brand);display:inline-flex;align-items:center;justify-content:center"><svg width="44" height="44" style="color: var(--brand)"><use href="#i-logo"/></svg></div>
+          <div style="font-size:32px;color:var(--text);font-weight:800;letter-spacing:-0.8px;margin-top:16px">contourline</div>
+          <div style="color:var(--muted);font-size:15px;margin-top:4px">Backup automático do seu celular</div>
+        </div>
+        <div style="margin:32px 0;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:14px;align-items:center;background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--border)">
+            <div style="width:36px;height:36px;border-radius:10px;background:var(--camera);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:#fff"><use href="#i-camera"/></svg></div>
+            <div style="color:var(--text-mid);font-size:13px;font-weight:500;line-height:18px;flex:1">Suas fotos sobem automático conforme você tira</div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--border)">
+            <div style="width:36px;height:36px;border-radius:10px;background:var(--gallery);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:#fff"><use href="#i-events"/></svg></div>
+            <div style="color:var(--text-mid);font-size:13px;font-weight:500;line-height:18px;flex:1">Organização por evento e dia, sem configurar nada</div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--border)">
+            <div style="width:36px;height:36px;border-radius:10px;background:var(--video);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:#fff"><use href="#i-wifi"/></svg></div>
+            <div style="color:var(--text-mid);font-size:13px;font-weight:500;line-height:18px;flex:1">Direto pro seu servidor, sem nuvem terceirizada</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center;gap:12px;background:var(--brand);padding:16px;border-radius:14px;box-shadow:0 8px 24px rgba(59,130,246,0.4)">
+          <svg width="20" height="20" style="color:#fff"><use href="#i-qr"/></svg>
+          <span style="color:white;font-size:16px;font-weight:700">Escanear QR do servidor</span>
+        </div>
+        <div style="color:var(--muted);text-align:center;font-size:13px;font-weight:500;padding:16px">Preencher manualmente</div>
+        <div style="color:var(--muted);font-size:12px;text-align:center;margin-top:24px;line-height:18px">💡 Abra o Contourline no computador → Eventos → 📱 Sincronizar</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar"><span>9:41</span><span class="status-icons"><svg width="16" height="16" style="color:#fff"><use href="#i-wifi"/></svg></span></div>
+      <div class="scroll">
+        <div style="padding:12px 16px"><div style="color:var(--text);font-size:24px;font-weight:800;letter-spacing:-0.5px">Perfil</div></div>
+        <div style="display:flex;align-items:center;gap:16px;background:var(--card);margin:0 16px;padding:16px;border-radius:16px;border:1px solid var(--border)">
+          <div style="position:relative">
+            <div style="width:80px;height:80px;border-radius:40px;border:2px solid var(--brand);background:url('https://i.pravatar.cc/200?img=68') center/cover"></div>
+            <div style="position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:14px;background:var(--brand);display:flex;align-items:center;justify-content:center;border:2px solid var(--card)"><svg width="13" height="13" style="color:#fff"><use href="#i-camera"/></svg></div>
+          </div>
+          <div style="flex:1">
+            <div style="color:var(--text);font-size:18px;font-weight:700">Alan Junio</div>
+            <div style="color:var(--muted);font-size:12px;margin-top:2px">iPhone 15 Pro</div>
+            <div style="color:var(--brand);font-size:12px;margin-top:8px;font-weight:600">Editar perfil</div>
+          </div>
+        </div>
+        <div style="display:flex;background:var(--card);margin:12px 16px 0;padding:14px;border-radius:14px;border:1px solid var(--border)">
+          <div style="flex:1;text-align:center"><div style="color:var(--text);font-size:22px;font-weight:800">1.247</div><div style="color:var(--muted);font-size:11px">Total</div></div>
+          <div style="width:1px;background:var(--border)"></div>
+          <div style="flex:1;text-align:center"><div style="color:var(--text);font-size:22px;font-weight:800">124</div><div style="color:var(--muted);font-size:11px">Hoje</div></div>
+          <div style="width:1px;background:var(--border)"></div>
+          <div style="flex:1;text-align:center"><div style="color:var(--text);font-size:22px;font-weight:800">02</div><div style="color:var(--muted);font-size:11px">Erros</div></div>
+        </div>
+        <div style="color:var(--muted);font-size:11px;letter-spacing:0.8px;font-weight:700;text-transform:uppercase;padding:24px 20px 8px">Sincronização</div>
+        <div style="background:var(--card);margin:0 16px;border-radius:14px;border:1px solid var(--border)">
+          <div style="display:flex;align-items:center;padding:14px">
+            <div style="flex:1"><div style="color:var(--text);font-size:14px;font-weight:600">Sync automático</div><div style="color:var(--muted);font-size:11px;margin-top:2px">Envia fotos a cada 15 min em background</div></div>
+            <div style="width:48px;height:28px;background:var(--brand);border-radius:14px;position:relative"><div style="width:24px;height:24px;background:white;border-radius:12px;position:absolute;top:2px;right:2px"></div></div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:0 14px"></div>
+          <div style="display:flex;align-items:center;padding:14px">
+            <div style="flex:1"><div style="color:var(--text);font-size:14px;font-weight:600">Somente Wi-Fi</div><div style="color:var(--muted);font-size:11px;margin-top:2px">Não usa dados móveis pra subir</div></div>
+            <div style="width:48px;height:28px;background:var(--border);border-radius:14px;position:relative"><div style="width:24px;height:24px;background:white;border-radius:12px;position:absolute;top:2px;left:2px"></div></div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:0 14px"></div>
+          <div style="display:flex;align-items:center;padding:14px">
+            <div style="flex:1"><div style="color:var(--text);font-size:14px;font-weight:600">Comprimir fotos grandes</div><div style="color:var(--muted);font-size:11px;margin-top:2px">Reduz fotos > 5 MB para 2048px</div></div>
+            <div style="width:48px;height:28px;background:var(--brand);border-radius:14px;position:relative"><div style="width:24px;height:24px;background:white;border-radius:12px;position:absolute;top:2px;right:2px"></div></div>
+          </div>
+        </div>
+        <div style="color:var(--faint);font-size:11px;text-align:center;margin-top:24px">Contourline Mobile · v1.0.0</div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-home"/></svg><div class="tl">Início</div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-events"/></svg><div class="tl">Eventos</div></div>
+        <div class="tab-item"><div class="tab-fab"><svg width="28" height="28" style="color:#fff"><use href="#i-plus"/></svg></div></div>
+        <div class="tab-item"><svg width="22" height="22" style="color: var(--muted)"><use href="#i-uploads"/></svg><div class="tl">Uploads</div></div>
+        <div class="tab-item active"><svg width="22" height="22" style="color: var(--brand)"><use href="#i-profile"/></svg><div class="tl">Perfil</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Design real do app. Ícones SVG, fonte Inter, animações suaves no splash.<br>
+  Toda interação fica idêntica a isso no celular.
+</div>
+
+<script>
+function showPair(i) {
+  document.querySelectorAll('[id^="pair-"]').forEach((p, idx) => {
+    p.style.display = idx === i ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((t, idx) => {
+    t.classList.toggle('active', idx === i);
+  });
+}
+</script>
+
+</body>
+</html>

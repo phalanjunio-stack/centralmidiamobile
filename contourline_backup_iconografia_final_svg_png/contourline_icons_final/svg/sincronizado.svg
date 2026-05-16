@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>sincronizado</title>
+  <g stroke="#A855F7" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 120 208 A144 144 0 0 1 376 152" />    <path d="M 376 152 H312" />    <path d="M 376 152 V88" />    <path d="M 392 304 A144 144 0 0 1 136 360" />    <path d="M 136 360 H200" />    <path d="M 136 360 V424" />
+  </g>
+</svg>

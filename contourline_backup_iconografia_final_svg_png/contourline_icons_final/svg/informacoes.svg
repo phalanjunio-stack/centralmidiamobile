@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>informacoes</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <circle cx="256" cy="256" r="176" />    <line x1="256" y1="232" x2="256" y2="352" />    <line x1="256" y1="164" x2="256" y2="164" />
+  </g>
+</svg>

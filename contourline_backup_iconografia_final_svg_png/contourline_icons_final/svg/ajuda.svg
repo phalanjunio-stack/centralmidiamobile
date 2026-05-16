@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>ajuda</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <circle cx="256" cy="256" r="176" />    <path d="M 208 208 C208 168 240 144 276 152 C312 160 336 184 336 220 C336 256 312 272 280 292 C256 308 256 328 256 336" />    <line x1="256" y1="392" x2="256" y2="392" />
+  </g>
+</svg>

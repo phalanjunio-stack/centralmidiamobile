@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>volume_alto</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 96 224 H160 L256 144 V368 L160 288 H96 Z" />    <path d="M 304 176 C384 232 384 280 304 336" />    <path d="M 344 128 C456 216 456 296 344 384" />
+  </g>
+</svg>

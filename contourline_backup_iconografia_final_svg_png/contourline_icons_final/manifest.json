@@ -1,0 +1,705 @@
+{
+  "count": 100,
+  "icons": [
+    {
+      "name": "inicio_home",
+      "svg": "svg/inicio_home.svg",
+      "png_512": "png_512/inicio_home.png",
+      "png_128": "png_128/inicio_home.png",
+      "color": "#1F8BFF"
+    },
+    {
+      "name": "projetos_folder",
+      "svg": "svg/projetos_folder.svg",
+      "png_512": "png_512/projetos_folder.png",
+      "png_128": "png_128/projetos_folder.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "camera",
+      "svg": "svg/camera.svg",
+      "png_512": "png_512/camera.png",
+      "png_128": "png_128/camera.png",
+      "color": "#1F8BFF"
+    },
+    {
+      "name": "galeria_image",
+      "svg": "svg/galeria_image.svg",
+      "png_512": "png_512/galeria_image.png",
+      "png_128": "png_128/galeria_image.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "upload_cloud",
+      "svg": "svg/upload_cloud.svg",
+      "png_512": "png_512/upload_cloud.png",
+      "png_128": "png_128/upload_cloud.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "buscar",
+      "svg": "svg/buscar.svg",
+      "png_512": "png_512/buscar.png",
+      "png_128": "png_128/buscar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "notificacoes",
+      "svg": "svg/notificacoes.svg",
+      "png_512": "png_512/notificacoes.png",
+      "png_128": "png_128/notificacoes.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "perfil",
+      "svg": "svg/perfil.svg",
+      "png_512": "png_512/perfil.png",
+      "png_128": "png_128/perfil.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "configuracoes_gear",
+      "svg": "svg/configuracoes_gear.svg",
+      "png_512": "png_512/configuracoes_gear.png",
+      "png_128": "png_128/configuracoes_gear.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "ajuda",
+      "svg": "svg/ajuda.svg",
+      "png_512": "png_512/ajuda.png",
+      "png_128": "png_128/ajuda.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "informacoes",
+      "svg": "svg/informacoes.svg",
+      "png_512": "png_512/informacoes.png",
+      "png_128": "png_128/informacoes.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "mais_opcoes",
+      "svg": "svg/mais_opcoes.svg",
+      "png_512": "png_512/mais_opcoes.png",
+      "png_128": "png_128/mais_opcoes.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "fechar",
+      "svg": "svg/fechar.svg",
+      "png_512": "png_512/fechar.png",
+      "png_128": "png_128/fechar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "editar",
+      "svg": "svg/editar.svg",
+      "png_512": "png_512/editar.png",
+      "png_128": "png_128/editar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "excluir",
+      "svg": "svg/excluir.svg",
+      "png_512": "png_512/excluir.png",
+      "png_128": "png_128/excluir.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "duplicar",
+      "svg": "svg/duplicar.svg",
+      "png_512": "png_512/duplicar.png",
+      "png_128": "png_128/duplicar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "compartilhar",
+      "svg": "svg/compartilhar.svg",
+      "png_512": "png_512/compartilhar.png",
+      "png_128": "png_128/compartilhar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "favorito",
+      "svg": "svg/favorito.svg",
+      "png_512": "png_512/favorito.png",
+      "png_128": "png_128/favorito.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "adicionar",
+      "svg": "svg/adicionar.svg",
+      "png_512": "png_512/adicionar.png",
+      "png_128": "png_128/adicionar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "check",
+      "svg": "svg/check.svg",
+      "png_512": "png_512/check.png",
+      "png_128": "png_128/check.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "menu",
+      "svg": "svg/menu.svg",
+      "png_512": "png_512/menu.png",
+      "png_128": "png_128/menu.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "calendario",
+      "svg": "svg/calendario.svg",
+      "png_512": "png_512/calendario.png",
+      "png_128": "png_128/calendario.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "localizacao",
+      "svg": "svg/localizacao.svg",
+      "png_512": "png_512/localizacao.png",
+      "png_128": "png_128/localizacao.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "relogio",
+      "svg": "svg/relogio.svg",
+      "png_512": "png_512/relogio.png",
+      "png_128": "png_128/relogio.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "filtro",
+      "svg": "svg/filtro.svg",
+      "png_512": "png_512/filtro.png",
+      "png_128": "png_128/filtro.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "ordenar",
+      "svg": "svg/ordenar.svg",
+      "png_512": "png_512/ordenar.png",
+      "png_128": "png_128/ordenar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "download",
+      "svg": "svg/download.svg",
+      "png_512": "png_512/download.png",
+      "png_128": "png_128/download.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "link",
+      "svg": "svg/link.svg",
+      "png_512": "png_512/link.png",
+      "png_128": "png_128/link.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "codigo_qr",
+      "svg": "svg/codigo_qr.svg",
+      "png_512": "png_512/codigo_qr.png",
+      "png_128": "png_128/codigo_qr.png",
+      "color": "#A855F7"
+    },
+    {
+      "name": "visualizar",
+      "svg": "svg/visualizar.svg",
+      "png_512": "png_512/visualizar.png",
+      "png_128": "png_128/visualizar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "ocultar",
+      "svg": "svg/ocultar.svg",
+      "png_512": "png_512/ocultar.png",
+      "png_128": "png_128/ocultar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "travar",
+      "svg": "svg/travar.svg",
+      "png_512": "png_512/travar.png",
+      "png_128": "png_128/travar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "destravar",
+      "svg": "svg/destravar.svg",
+      "png_512": "png_512/destravar.png",
+      "png_128": "png_128/destravar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "play",
+      "svg": "svg/play.svg",
+      "png_512": "png_512/play.png",
+      "png_128": "png_128/play.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "pausar",
+      "svg": "svg/pausar.svg",
+      "png_512": "png_512/pausar.png",
+      "png_128": "png_128/pausar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "parar",
+      "svg": "svg/parar.svg",
+      "png_512": "png_512/parar.png",
+      "png_128": "png_128/parar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "tela_cheia",
+      "svg": "svg/tela_cheia.svg",
+      "png_512": "png_512/tela_cheia.png",
+      "png_128": "png_128/tela_cheia.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "flash_desativado",
+      "svg": "svg/flash_desativado.svg",
+      "png_512": "png_512/flash_desativado.png",
+      "png_128": "png_128/flash_desativado.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "flash_auto",
+      "svg": "svg/flash_auto.svg",
+      "png_512": "png_512/flash_auto.png",
+      "png_128": "png_128/flash_auto.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "flash_ligado",
+      "svg": "svg/flash_ligado.svg",
+      "png_512": "png_512/flash_ligado.png",
+      "png_128": "png_128/flash_ligado.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "virar_camera",
+      "svg": "svg/virar_camera.svg",
+      "png_512": "png_512/virar_camera.png",
+      "png_128": "png_128/virar_camera.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "grade",
+      "svg": "svg/grade.svg",
+      "png_512": "png_512/grade.png",
+      "png_128": "png_128/grade.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "exposicao",
+      "svg": "svg/exposicao.svg",
+      "png_512": "png_512/exposicao.png",
+      "png_128": "png_128/exposicao.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "foco_auto",
+      "svg": "svg/foco_auto.svg",
+      "png_512": "png_512/foco_auto.png",
+      "png_128": "png_128/foco_auto.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "foco_travado",
+      "svg": "svg/foco_travado.svg",
+      "png_512": "png_512/foco_travado.png",
+      "png_128": "png_128/foco_travado.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "foto",
+      "svg": "svg/foto.svg",
+      "png_512": "png_512/foto.png",
+      "png_128": "png_128/foto.png",
+      "color": "#1F8BFF"
+    },
+    {
+      "name": "video",
+      "svg": "svg/video.svg",
+      "png_512": "png_512/video.png",
+      "png_128": "png_128/video.png",
+      "color": "#FF4444"
+    },
+    {
+      "name": "gravar_segurar",
+      "svg": "svg/gravar_segurar.svg",
+      "png_512": "png_512/gravar_segurar.png",
+      "png_128": "png_128/gravar_segurar.png",
+      "color": "#FF4444"
+    },
+    {
+      "name": "parar_gravacao",
+      "svg": "svg/parar_gravacao.svg",
+      "png_512": "png_512/parar_gravacao.png",
+      "png_128": "png_128/parar_gravacao.png",
+      "color": "#FF4444"
+    },
+    {
+      "name": "foto_rapida",
+      "svg": "svg/foto_rapida.svg",
+      "png_512": "png_512/foto_rapida.png",
+      "png_128": "png_128/foto_rapida.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "live_photo",
+      "svg": "svg/live_photo.svg",
+      "png_512": "png_512/live_photo.png",
+      "png_128": "png_128/live_photo.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "timer",
+      "svg": "svg/timer.svg",
+      "png_512": "png_512/timer.png",
+      "png_128": "png_128/timer.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "hdr",
+      "svg": "svg/hdr.svg",
+      "png_512": "png_512/hdr.png",
+      "png_128": "png_128/hdr.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "raw",
+      "svg": "svg/raw.svg",
+      "png_512": "png_512/raw.png",
+      "png_128": "png_128/raw.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "microfone_desconectado",
+      "svg": "svg/microfone_desconectado.svg",
+      "png_512": "png_512/microfone_desconectado.png",
+      "png_128": "png_128/microfone_desconectado.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "microfone_conectado",
+      "svg": "svg/microfone_conectado.svg",
+      "png_512": "png_512/microfone_conectado.png",
+      "png_128": "png_128/microfone_conectado.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "audio_captando",
+      "svg": "svg/audio_captando.svg",
+      "png_512": "png_512/audio_captando.png",
+      "png_128": "png_128/audio_captando.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "mudo",
+      "svg": "svg/mudo.svg",
+      "png_512": "png_512/mudo.png",
+      "png_128": "png_128/mudo.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "volume_baixo",
+      "svg": "svg/volume_baixo.svg",
+      "png_512": "png_512/volume_baixo.png",
+      "png_128": "png_128/volume_baixo.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "volume_medio",
+      "svg": "svg/volume_medio.svg",
+      "png_512": "png_512/volume_medio.png",
+      "png_128": "png_128/volume_medio.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "volume_alto",
+      "svg": "svg/volume_alto.svg",
+      "png_512": "png_512/volume_alto.png",
+      "png_128": "png_128/volume_alto.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "celular_conectado",
+      "svg": "svg/celular_conectado.svg",
+      "png_512": "png_512/celular_conectado.png",
+      "png_128": "png_128/celular_conectado.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "notebook_conectado",
+      "svg": "svg/notebook_conectado.svg",
+      "png_512": "png_512/notebook_conectado.png",
+      "png_128": "png_128/notebook_conectado.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "wifi",
+      "svg": "svg/wifi.svg",
+      "png_512": "png_512/wifi.png",
+      "png_128": "png_128/wifi.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "sinal_forte",
+      "svg": "svg/sinal_forte.svg",
+      "png_512": "png_512/sinal_forte.png",
+      "png_128": "png_128/sinal_forte.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "sinal_medio",
+      "svg": "svg/sinal_medio.svg",
+      "png_512": "png_512/sinal_medio.png",
+      "png_128": "png_128/sinal_medio.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "sinal_fraco",
+      "svg": "svg/sinal_fraco.svg",
+      "png_512": "png_512/sinal_fraco.png",
+      "png_128": "png_128/sinal_fraco.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "bluetooth",
+      "svg": "svg/bluetooth.svg",
+      "png_512": "png_512/bluetooth.png",
+      "png_128": "png_128/bluetooth.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "usb",
+      "svg": "svg/usb.svg",
+      "png_512": "png_512/usb.png",
+      "png_128": "png_128/usb.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "nuvem",
+      "svg": "svg/nuvem.svg",
+      "png_512": "png_512/nuvem.png",
+      "png_128": "png_128/nuvem.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "drive",
+      "svg": "svg/drive.svg",
+      "png_512": "png_512/drive.png",
+      "png_128": "png_128/drive.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "importar",
+      "svg": "svg/importar.svg",
+      "png_512": "png_512/importar.png",
+      "png_128": "png_128/importar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "exportar",
+      "svg": "svg/exportar.svg",
+      "png_512": "png_512/exportar.png",
+      "png_128": "png_128/exportar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "sincronizar",
+      "svg": "svg/sincronizar.svg",
+      "png_512": "png_512/sincronizar.png",
+      "png_128": "png_128/sincronizar.png",
+      "color": "#1F8BFF"
+    },
+    {
+      "name": "backup",
+      "svg": "svg/backup.svg",
+      "png_512": "png_512/backup.png",
+      "png_128": "png_128/backup.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "restaurar",
+      "svg": "svg/restaurar.svg",
+      "png_512": "png_512/restaurar.png",
+      "png_128": "png_128/restaurar.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "historico",
+      "svg": "svg/historico.svg",
+      "png_512": "png_512/historico.png",
+      "png_128": "png_128/historico.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "atividade",
+      "svg": "svg/atividade.svg",
+      "png_512": "png_512/atividade.png",
+      "png_128": "png_128/atividade.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "relatorio",
+      "svg": "svg/relatorio.svg",
+      "png_512": "png_512/relatorio.png",
+      "png_128": "png_128/relatorio.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "estatisticas",
+      "svg": "svg/estatisticas.svg",
+      "png_512": "png_512/estatisticas.png",
+      "png_128": "png_128/estatisticas.png",
+      "color": "#FFFFFF"
+    },
+    {
+      "name": "projeto_ativo",
+      "svg": "svg/projeto_ativo.svg",
+      "png_512": "png_512/projeto_ativo.png",
+      "png_128": "png_128/projeto_ativo.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "concluido",
+      "svg": "svg/concluido.svg",
+      "png_512": "png_512/concluido.png",
+      "png_128": "png_128/concluido.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "aguardando",
+      "svg": "svg/aguardando.svg",
+      "png_512": "png_512/aguardando.png",
+      "png_128": "png_128/aguardando.png",
+      "color": "#F5A400"
+    },
+    {
+      "name": "falha",
+      "svg": "svg/falha.svg",
+      "png_512": "png_512/falha.png",
+      "png_128": "png_128/falha.png",
+      "color": "#FF4444"
+    },
+    {
+      "name": "evento",
+      "svg": "svg/evento.svg",
+      "png_512": "png_512/evento.png",
+      "png_128": "png_128/evento.png",
+      "color": "#A855F7"
+    },
+    {
+      "name": "treinamento",
+      "svg": "svg/treinamento.svg",
+      "png_512": "png_512/treinamento.png",
+      "png_128": "png_128/treinamento.png",
+      "color": "#35C7FF"
+    },
+    {
+      "name": "visita",
+      "svg": "svg/visita.svg",
+      "png_512": "png_512/visita.png",
+      "png_128": "png_128/visita.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "demanda",
+      "svg": "svg/demanda.svg",
+      "png_512": "png_512/demanda.png",
+      "png_128": "png_128/demanda.png",
+      "color": "#F5A400"
+    },
+    {
+      "name": "conteudo_interno",
+      "svg": "svg/conteudo_interno.svg",
+      "png_512": "png_512/conteudo_interno.png",
+      "png_128": "png_128/conteudo_interno.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "novo_tipo",
+      "svg": "svg/novo_tipo.svg",
+      "png_512": "png_512/novo_tipo.png",
+      "png_128": "png_128/novo_tipo.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "enviado",
+      "svg": "svg/enviado.svg",
+      "png_512": "png_512/enviado.png",
+      "png_128": "png_128/enviado.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "enviando",
+      "svg": "svg/enviando.svg",
+      "png_512": "png_512/enviando.png",
+      "png_128": "png_128/enviando.png",
+      "color": "#1F8BFF"
+    },
+    {
+      "name": "pendente",
+      "svg": "svg/pendente.svg",
+      "png_512": "png_512/pendente.png",
+      "png_128": "png_128/pendente.png",
+      "color": "#F5A400"
+    },
+    {
+      "name": "erro",
+      "svg": "svg/erro.svg",
+      "png_512": "png_512/erro.png",
+      "png_128": "png_128/erro.png",
+      "color": "#FF4444"
+    },
+    {
+      "name": "pausado",
+      "svg": "svg/pausado.svg",
+      "png_512": "png_512/pausado.png",
+      "png_128": "png_128/pausado.png",
+      "color": "#A7B2C3"
+    },
+    {
+      "name": "sincronizado",
+      "svg": "svg/sincronizado.svg",
+      "png_512": "png_512/sincronizado.png",
+      "png_128": "png_128/sincronizado.png",
+      "color": "#A855F7"
+    },
+    {
+      "name": "servidor_conectado",
+      "svg": "svg/servidor_conectado.svg",
+      "png_512": "png_512/servidor_conectado.png",
+      "png_128": "png_128/servidor_conectado.png",
+      "color": "#22C55E"
+    },
+    {
+      "name": "atencao",
+      "svg": "svg/atencao.svg",
+      "png_512": "png_512/atencao.png",
+      "png_128": "png_128/atencao.png",
+      "color": "#F5A400"
+    },
+    {
+      "name": "sem_conexao",
+      "svg": "svg/sem_conexao.svg",
+      "png_512": "png_512/sem_conexao.png",
+      "png_128": "png_128/sem_conexao.png",
+      "color": "#FF4444"
+    },
+    {
+      "name": "tudo_sincronizado",
+      "svg": "svg/tudo_sincronizado.svg",
+      "png_512": "png_512/tudo_sincronizado.png",
+      "png_128": "png_128/tudo_sincronizado.png",
+      "color": "#A7B2C3"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>ocultar</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 72 72 L440 440" />    <path d="M 48 256 C112 152 176 112 256 112 C336 112 400 152 464 256 C432 310 394 350 352 374" />    <path d="M 164 148 C124 172 86 208 48 256 C88 320 132 360 184 382" />    <path d="M 208 208 C232 184 280 184 304 208 C328 232 328 280 304 304" />
+  </g>
+</svg>

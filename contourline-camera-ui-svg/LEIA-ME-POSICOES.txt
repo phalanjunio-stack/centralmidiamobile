@@ -1,0 +1,26 @@
+SVGs da Câmera Contourline — posição sugerida
+
+Formato base: 1080 x 1920, vertical 9:16.
+Use 10-camera-overlay-layout-1080x1920.svg como referência geral.
+
+Posições principais:
+- Preview da câmera: x 0, y 0, width 1080, height 1920.
+- Evento: x 72, y 100.
+- Status servidor: x 72, y 150.
+- Flash: x 735, y 118.
+- Virar câmera: x 840, y 118.
+- Configurações: x 945, y 118.
+- Foco no rosto: x 360, y 500, width 284, height 384.
+- Exposição: x 42, y 520, width 90, height 420.
+- Seletor Foto/Vídeo: x 410, y 1355, width 260, height 64.
+- Miniatura última captura: x 72, y 1488, width 116, height 116.
+- Botão captura: centro x 540, centro y 1550, diâmetro 210.
+- Status/fila: x 828, y 1508, width 180, height 84.
+
+Estados do botão:
+01 normal foto
+02 foto capturada / onda azul
+03 segurando para vídeo / onda vermelha
+04 modo vídeo / gravando
+
+Observação: o símbolo dentro do botão é vetorial aproximado. Para fidelidade total, substitua pelo SVG oficial da logo Contourline.

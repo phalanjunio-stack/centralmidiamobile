@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>foco_travado</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 120 200 V120 H200" />    <path d="M 312 120 H392 V200" />    <path d="M 392 312 V392 H312" />    <path d="M 200 392 H120 V312" />    <rect x="212" y="224" width="88" height="80" rx="8" />    <path d="M 228 224 V204 C228 184 240 172 256 172 C272 172 284 184 284 204 V224" />
+  </g>
+</svg>

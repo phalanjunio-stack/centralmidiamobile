@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>tela_cheia</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 112 208 V112 H208" />    <path d="M 304 112 H400 V208" />    <path d="M 400 304 V400 H304" />    <path d="M 208 400 H112 V304" />
+  </g>
+</svg>

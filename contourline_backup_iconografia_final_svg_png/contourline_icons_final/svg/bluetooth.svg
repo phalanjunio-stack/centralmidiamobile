@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>bluetooth</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 216 96 L352 208 L256 256 L352 304 L216 416 V96 L352 208 M216 256 L128 168 M216 256 L128 344" />
+  </g>
+</svg>

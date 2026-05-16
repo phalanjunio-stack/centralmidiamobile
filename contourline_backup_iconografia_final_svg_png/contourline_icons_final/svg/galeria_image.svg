@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>galeria_image</title>
+  <g stroke="#A7B2C3" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <rect x="72" y="120" width="368" height="288" rx="28" />    <circle cx="168" cy="208" r="32" />    <path d="M 104 360 L208 264 L288 336 L328 296 L416 376" />
+  </g>
+</svg>

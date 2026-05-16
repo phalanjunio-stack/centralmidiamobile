@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>pendente</title>
+  <g stroke="#F5A400" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <circle cx="256" cy="256" r="176" />    <line x1="256" y1="152" x2="256" y2="264" />    <line x1="256" y1="264" x2="328" y2="304" />
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>microfone_desconectado</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 208 96 V240 A48 48 0 0 0 304 240 V96 A48 48 0 0 0 208 96 Z" />    <path d="M 160 216 V248 A96 96 0 0 0 256 344 A96 96 0 0 0 352 248 V216" />    <line x1="256" y1="344" x2="256" y2="416" />    <line x1="208" y1="416" x2="304" y2="416" />    <line x1="96" y1="96" x2="416" y2="416" />
+  </g>
+</svg>

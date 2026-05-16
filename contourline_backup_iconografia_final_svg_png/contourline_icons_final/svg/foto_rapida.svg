@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>foto_rapida</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <circle cx="256" cy="256" r="48" />    <line x1="256" y1="72" x2="256" y2="128" />    <line x1="256" y1="384" x2="256" y2="440" />    <line x1="72" y1="256" x2="128" y2="256" />    <line x1="384" y1="256" x2="440" y2="256" />    <path d="M 156 156 L120 120" />    <path d="M 356 156 L392 120" />    <path d="M 156 356 L120 392" />    <path d="M 356 356 L392 392" />
+  </g>
+</svg>

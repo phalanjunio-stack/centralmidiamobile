@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>pausado</title>
+  <g stroke="#A7B2C3" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 160 384 H128 A72 72 0 0 1 128 240 A96 96 0 0 1 308 188 A80 80 0 0 1 400 240 A72 72 0 0 1 384 384 H160" />    <line x1="232" y1="272" x2="232" y2="344" />    <line x1="280" y1="272" x2="280" y2="344" />
+  </g>
+</svg>

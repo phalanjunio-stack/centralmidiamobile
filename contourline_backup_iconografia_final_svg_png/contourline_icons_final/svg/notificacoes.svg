@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>notificacoes</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <path d="M 168 376 H344" />    <path d="M 200 376 C200 408 224 432 256 432 C288 432 312 408 312 376" />    <path d="M 152 344 C176 312 176 264 176 216 C176 160 208 120 256 120 C304 120 336 160 336 216 C336 264 336 312 360 344 Z" />
+  </g>
+</svg>

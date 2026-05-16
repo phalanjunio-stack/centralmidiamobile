@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>compartilhar</title>
+  <g stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" >
+    <circle cx="144" cy="256" r="36" />    <circle cx="336" cy="152" r="36" />    <circle cx="336" cy="360" r="36" />    <line x1="176" y1="240" x2="304" y2="168" />    <line x1="176" y1="272" x2="304" y2="344" />
+  </g>
+</svg>
