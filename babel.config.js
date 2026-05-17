@@ -2,7 +2,10 @@ module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
-    // worklets/plugin removido — incompativel com Expo Go SDK 55.
-    // Reanimated/Skia entram quando rodarmos development build (Fase 5).
+    plugins: [
+      // Reanimated 4 worklets — necessario pro build EAS.
+      // Em Expo Go SDK 55 ainda pode dar warning, mas no dev build funciona.
+      'react-native-worklets/plugin',
+    ],
   };
 };
