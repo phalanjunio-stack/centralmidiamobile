@@ -25,6 +25,7 @@ import GalleryScreen      from './screens/GalleryScreen';
 import ProfilePickerScreen from './screens/ProfilePickerScreen';
 import EventPickerScreen   from './screens/EventPickerScreen';
 import CameraScreen        from './screens/CameraScreen';
+import ConnectAuraScreen   from './screens/ConnectAuraScreen';
 
 import * as ExpoSplash from 'expo-splash-screen';
 
@@ -303,21 +304,21 @@ export default function App() {
     Inter_700Bold, Inter_800ExtraBold,
   });
 
-  // Boot real: migra credenciais legadas (AsyncStorage -> SecureStore),
-  // le token, snapshot inicial de rede.
-  // BYPASS: ainda forca initialRoute='Main' — sera removido na Fase 2
-  // quando a nova tela "Conectar Central" estiver pronta e checaremos
-  // se tem token pra decidir entre Setup ou Main.
+  // Boot real: migra credenciais legadas, le token, snapshot inicial de rede.
+  // Decide a rota inicial baseado em ter token pareado:
+  //   - hasToken=true  -> Main (app pareado, abre direto)
+  //   - hasToken=false -> ConnectAura (Fase 2: tela de descoberta/pareamento)
   useEffect(() => {
     (async () => {
       try {
         const result = await runBootSequence();
         setBootResult(result);
+        setInitialRoute(result.hasToken ? 'Main' : 'ConnectAura');
       } catch (e) {
         console.warn('[boot] falha:', e?.message);
         setBootResult({ token: null, hasToken: false });
+        setInitialRoute('ConnectAura');
       }
-      setInitialRoute('Main');
     })();
   }, []);
 
@@ -355,6 +356,11 @@ export default function App() {
             contentStyle: { backgroundColor: colors.bg },
           }}
         >
+          <Stack.Screen
+            name="ConnectAura"
+            component={ConnectAuraScreen}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="Setup"
             component={SetupScreen}
