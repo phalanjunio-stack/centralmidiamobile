@@ -6,8 +6,8 @@
 //  - 'video-mode'  : modo vídeo (glow vermelho, quadrado de stop)
 //  - 'video-rec'   : gravando em modo vídeo (anel vermelho + quadrado pulsante)
 
-import React from 'react';
-import { View, Pressable, Animated, StyleSheet, Image } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Pressable, Animated, Easing, StyleSheet, Image } from 'react-native';
 import Svg, {
   Defs, RadialGradient, Stop, Filter, FeDropShadow,
   Circle, G, Rect,
@@ -57,12 +57,91 @@ export default function CaptureButton({
   // O SVG é 300x300 mas o "botão visível" é o círculo central r=82 (164 de diâmetro)
   // Vamos manter a viewBox 300x300 e escalar a View pro tamanho desejado
   // proportions: button core ≈ size, wave radius reaches size * 1.6
-  const stageSize = size * 1.6;
+  const stageSize = size * 1.8;
 
   const isVideoMode = mode === 'video';
   const showRecording = recording;
   const accentColor = (showRecording || isVideoMode) ? '#FF3B45' : '#2B83FF';
   const accentSoft  = (showRecording || isVideoMode) ? '#FF7A82' : '#73B7FF';
+  const sparkColor  = (showRecording || isVideoMode) ? '#FFC9CC' : '#BCE0FF';
+
+  // ── Smoke-glow animations (always running) ──
+  const auraPulse  = useRef(new Animated.Value(0)).current;
+  const haloRotate = useRef(new Animated.Value(0)).current;
+  const sparkAnims = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+
+  useEffect(() => {
+    // Aura pulse (in/out, ~2.6s loop)
+    const aura = Animated.loop(
+      Animated.sequence([
+        Animated.timing(auraPulse, {
+          toValue: 1, duration: 1300, easing: Easing.inOut(Easing.sin), useNativeDriver: true,
+        }),
+        Animated.timing(auraPulse, {
+          toValue: 0, duration: 1300, easing: Easing.inOut(Easing.sin), useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Halo rotation (continuous, 4.5s/volta)
+    const halo = Animated.loop(
+      Animated.timing(haloRotate, {
+        toValue: 1, duration: 4500, easing: Easing.linear, useNativeDriver: true,
+      })
+    );
+
+    // 4 sparks com delays e durações diferentes
+    const sparkConfigs = [
+      { delay: 0,    duration: 1800 },
+      { delay: 450,  duration: 2000 },
+      { delay: 900,  duration: 1700 },
+      { delay: 1350, duration: 2100 },
+    ];
+    const sparkLoops = sparkConfigs.map((cfg, i) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(cfg.delay),
+          Animated.timing(sparkAnims[i], {
+            toValue: 1, duration: cfg.duration,
+            easing: Easing.inOut(Easing.quad), useNativeDriver: true,
+          }),
+          Animated.timing(sparkAnims[i], {
+            toValue: 0, duration: 0, useNativeDriver: true,
+          }),
+        ])
+      )
+    );
+
+    aura.start();
+    halo.start();
+    sparkLoops.forEach(l => l.start());
+
+    return () => {
+      aura.stop();
+      halo.stop();
+      sparkLoops.forEach(l => l.stop());
+    };
+  }, []);
+
+  // Aura interpolations
+  const auraScale = auraPulse.interpolate({
+    inputRange: [0, 1], outputRange: [1, 1.12],
+  });
+  const auraOpacity = auraPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: showRecording ? [0.45, 0.25] : [0.9, 0.55],
+  });
+  const haloRotateDeg = haloRotate.interpolate({
+    inputRange: [0, 1], outputRange: ['0deg', '360deg'],
+  });
+
+  // Posição base das 4 faíscas (graus)
+  const SPARK_ANGLES = [35, 125, 215, 305];
 
   // Animação da onda (foto capturada ou gravando)
   const rippleScale = rippleAnim
@@ -93,6 +172,93 @@ export default function CaptureButton({
         styles.stage,
         { width: stageSize, height: stageSize, left: (size - stageSize) / 2, top: (size - stageSize) / 2 },
       ]}>
+
+        {/* ── AURA difusa (sempre ativa, pulsando) ── */}
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFillObject,
+            { transform: [{ scale: auraScale }], opacity: auraOpacity },
+          ]}
+          pointerEvents="none"
+        >
+          <Svg width="100%" height="100%" viewBox="0 0 300 300">
+            <Defs>
+              <RadialGradient id={`aura-${isVideoMode || showRecording ? 'red' : 'blue'}`} cx="50%" cy="50%" r="50%">
+                <Stop offset="0%"  stopColor={accentColor} stopOpacity={0.55} />
+                <Stop offset="30%" stopColor={accentColor} stopOpacity={0.20} />
+                <Stop offset="60%" stopColor={accentColor} stopOpacity={0.06} />
+                <Stop offset="100%" stopColor={accentColor} stopOpacity={0} />
+              </RadialGradient>
+            </Defs>
+            <Circle cx={150} cy={150} r={140} fill={`url(#aura-${isVideoMode || showRecording ? 'red' : 'blue'})`} />
+          </Svg>
+        </Animated.View>
+
+        {/* ── HALO girando (anel sutil) ── */}
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFillObject,
+            { transform: [{ rotate: haloRotateDeg }] },
+          ]}
+          pointerEvents="none"
+        >
+          <Svg width="100%" height="100%" viewBox="0 0 300 300">
+            <Defs>
+              <RadialGradient id={`halo-${isVideoMode || showRecording ? 'red' : 'blue'}`} cx="50%" cy="50%" r="50%">
+                <Stop offset="55%" stopColor={accentColor} stopOpacity={0} />
+                <Stop offset="62%" stopColor={accentSoft}  stopOpacity={0.55} />
+                <Stop offset="72%" stopColor={accentColor} stopOpacity={0} />
+              </RadialGradient>
+            </Defs>
+            <Circle cx={150} cy={150} r={108} fill={`url(#halo-${isVideoMode || showRecording ? 'red' : 'blue'})`} />
+          </Svg>
+        </Animated.View>
+
+        {/* ── 4 FAÍSCAS orbitando ── */}
+        {SPARK_ANGLES.map((baseAngle, i) => {
+          const anim = sparkAnims[i];
+          const rotate = anim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [`${baseAngle}deg`, `${baseAngle + 220}deg`],
+          });
+          const translateY = anim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-(stageSize * 0.28), -(stageSize * 0.44)],
+          });
+          const opacity = anim.interpolate({
+            inputRange: [0, 0.2, 0.6, 1],
+            outputRange: [0, 1, 1, 0],
+          });
+          const scale = anim.interpolate({
+            inputRange: [0, 0.2, 0.6, 1],
+            outputRange: [0.35, 0.7, 1, 0.25],
+          });
+          return (
+            <Animated.View
+              key={i}
+              pointerEvents="none"
+              style={[
+                styles.sparkWrap,
+                {
+                  opacity,
+                  transform: [
+                    { rotate },
+                    { translateY },
+                    { scale },
+                  ],
+                },
+              ]}
+            >
+              <View style={[
+                styles.spark,
+                {
+                  backgroundColor: sparkColor,
+                  shadowColor: accentColor,
+                },
+              ]} />
+            </Animated.View>
+          );
+        })}
 
         {/* ── Onda pulsante (recording) — fora do botão ── */}
         {(showRecording || (rippleAnim && mode === 'photo')) && (
@@ -189,9 +355,26 @@ const styles = StyleSheet.create({
   stage: {
     position: 'absolute',
     alignItems: 'center', justifyContent: 'center',
+    overflow: 'visible',
   },
   logoOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center', justifyContent: 'center',
+  },
+  sparkWrap: {
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+  },
+  spark: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    marginLeft: -2.5,
+    marginTop: -2.5,
+    shadowOpacity: 0.95,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
   },
 });
