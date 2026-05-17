@@ -26,9 +26,12 @@ import ProfilePickerScreen from './screens/ProfilePickerScreen';
 import EventPickerScreen   from './screens/EventPickerScreen';
 import CameraScreen        from './screens/CameraScreen';
 
+import * as ExpoSplash from 'expo-splash-screen';
+
 import { getServerConfig, getDeviceProfile, getDeviceToken, getActiveEvent } from './services/storage';
 import { registerBackgroundSync } from './services/sync';
 import { setupNotificationsHandler } from './services/notify';
+import { runBootSequence } from './src/boot/bootSequence';
 import { colors } from './theme';
 
 import HomeIcon    from './components/icons/HomeIcon';
@@ -42,6 +45,9 @@ const Tab   = createBottomTabNavigator();
 const { width: SCREEN_W } = Dimensions.get('window');
 const BG_MENU = require('./assets/tab_bg.png');
 
+// Segura o splash nativo enquanto o JS roda o boot (fonts + token + rede).
+// hideAsync sera chamado quando tudo estiver pronto.
+ExpoSplash.preventAutoHideAsync().catch(() => {});
 
 setupNotificationsHandler();
 
@@ -288,28 +294,50 @@ function MainTabs({ navigation }) {
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState(null);
+  const [bootResult, setBootResult] = useState(null);
+  const [splashFading, setSplashFading] = useState(false);
+  const [splashHidden, setSplashHidden] = useState(false);
+
   const [fontsLoaded] = useFonts({
     Inter_400Regular, Inter_500Medium, Inter_600SemiBold,
     Inter_700Bold, Inter_800ExtraBold,
   });
 
-  const [bootDelay, setBootDelay] = useState(true);
-
+  // Boot real: migra credenciais legadas (AsyncStorage -> SecureStore),
+  // le token, snapshot inicial de rede.
+  // BYPASS: ainda forca initialRoute='Main' — sera removido na Fase 2
+  // quando a nova tela "Conectar Central" estiver pronta e checaremos
+  // se tem token pra decidir entre Setup ou Main.
   useEffect(() => {
     (async () => {
-      // BYPASS temporário: vai direto pra Main, sem precisar parear celular
+      try {
+        const result = await runBootSequence();
+        setBootResult(result);
+      } catch (e) {
+        console.warn('[boot] falha:', e?.message);
+        setBootResult({ token: null, hasToken: false });
+      }
       setInitialRoute('Main');
     })();
-    // Mostra splash por no mínimo 1.5s pra animação aparecer
-    const t = setTimeout(() => setBootDelay(false), 1500);
-    return () => clearTimeout(t);
   }, []);
 
-  if (!initialRoute || !fontsLoaded || bootDelay) {
+  // Quando boot + fonts terminaram: esconde splash nativo + dispara fade-out
+  // do splash custom. Sem delay fixo — timing eh determinado pelas operacoes.
+  useEffect(() => {
+    if (initialRoute && fontsLoaded && bootResult && !splashFading) {
+      ExpoSplash.hideAsync().catch(() => {});
+      setSplashFading(true);
+    }
+  }, [initialRoute, fontsLoaded, bootResult, splashFading]);
+
+  if (!splashHidden) {
     return (
       <SafeAreaProvider>
         <StatusBar style="light" />
-        <SplashScreen />
+        <SplashScreen
+          fadingOut={splashFading}
+          onFadeOutComplete={() => setSplashHidden(true)}
+        />
       </SafeAreaProvider>
     );
   }

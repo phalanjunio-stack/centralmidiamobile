@@ -1,9 +1,22 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Fase 1: deviceToken e deviceId migrados pra SecureStore (Keychain/Keystore
+// nativo). Re-exportamos com a mesma assinatura pra nao quebrar call sites
+// (sync.js, App.js, SetupScreen.js, etc).
+import {
+  getDeviceToken as ssGetDeviceToken,
+  setDeviceToken as ssSetDeviceToken,
+  getDeviceId as ssGetDeviceId,
+  setDeviceId as ssSetDeviceId,
+} from '../src/services/secureStore';
+
+export const getDeviceToken = ssGetDeviceToken;
+export const setDeviceToken = ssSetDeviceToken;
+export const getDeviceId = ssGetDeviceId;
+export const setDeviceId = ssSetDeviceId;
+
 const KEYS = {
   SERVER_CONFIG:  '@contourline/server_config',
-  DEVICE_TOKEN:   '@contourline/device_token',   // NOVO: token de auth pareado
-  DEVICE_ID:      '@contourline/device_id',      // NOVO: id do device no server
   ACTIVE_EVENT:   '@contourline/active_event',
   DEVICE_PROFILE: '@contourline/device_profile',
   LAST_SYNC:      '@contourline/last_sync',
@@ -12,22 +25,6 @@ const KEYS = {
   UPLOAD_QUEUE:   '@contourline/upload_queue',
   SETTINGS:       '@contourline/settings',
 };
-
-// ── Device Token (substitui senha após pareamento) ──
-export async function getDeviceToken() {
-  return AsyncStorage.getItem(KEYS.DEVICE_TOKEN);
-}
-export async function setDeviceToken(token) {
-  if (!token) return AsyncStorage.removeItem(KEYS.DEVICE_TOKEN);
-  await AsyncStorage.setItem(KEYS.DEVICE_TOKEN, token);
-}
-export async function getDeviceId() {
-  return AsyncStorage.getItem(KEYS.DEVICE_ID);
-}
-export async function setDeviceId(id) {
-  if (!id) return AsyncStorage.removeItem(KEYS.DEVICE_ID);
-  await AsyncStorage.setItem(KEYS.DEVICE_ID, id);
-}
 
 // ── Config do servidor (URL + senha) ──
 export async function getServerConfig() {
@@ -124,6 +121,9 @@ export async function saveSettings(settings) {
 // ── Clear tudo (desconectar) ──
 export async function clearAll() {
   await AsyncStorage.multiRemove(Object.values(KEYS));
+  // Tambem limpa credenciais no SecureStore (Fase 1)
+  await setDeviceToken(null);
+  await setDeviceId(null);
 }
 
 // ── Controle de sync ──

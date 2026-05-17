@@ -23,8 +23,9 @@ const C = {
 
 const STAGE = 200;
 
-export default function SplashScreen() {
+export default function SplashScreen({ fadingOut = false, onFadeOutComplete } = {}) {
   // ── Animations ──
+  const fadeOut     = useRef(new Animated.Value(1)).current;
   const arcRot      = useRef(new Animated.Value(0)).current;  // 1.6s
   const orbitFast   = useRef(new Animated.Value(0)).current;  // 2.8s
   const ringSlow    = useRef(new Animated.Value(0)).current;  // 28s
@@ -92,6 +93,19 @@ export default function SplashScreen() {
     };
   }, []);
 
+  // Fade-out controlado por prop (Fase 1: dismiss-on-ready).
+  useEffect(() => {
+    if (!fadingOut) return;
+    Animated.timing(fadeOut, {
+      toValue: 0,
+      duration: 400,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start(() => {
+      onFadeOutComplete?.();
+    });
+  }, [fadingOut]);
+
   const toRot = (val, multi = 1) => val.interpolate({
     inputRange:  [0, 1],
     outputRange: ['0deg', `${360 * multi}deg`],
@@ -101,7 +115,7 @@ export default function SplashScreen() {
   const breatheOpacity = breathe.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity: fadeOut }]}>
       <LinearGradient
         colors={[C.bgA, C.bgB, C.bgC]}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
@@ -213,7 +227,7 @@ export default function SplashScreen() {
         </Svg>
         <Text style={styles.footerText}>Seus dados estão protegidos</Text>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
