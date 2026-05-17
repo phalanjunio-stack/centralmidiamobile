@@ -1,7 +1,7 @@
 // Aura Design System — Curvas e duracoes de animacao.
-// Usar via Reanimated. Easing vem do Reanimated p/ funcionar dentro de worklets.
+// Usa Easing do react-native (Animated padrao) pra ser compativel com Expo Go.
 
-import { Easing } from 'react-native-reanimated';
+import { Easing } from 'react-native';
 
 export const motion = {
   duration: {

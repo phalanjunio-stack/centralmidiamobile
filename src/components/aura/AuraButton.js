@@ -1,14 +1,11 @@
-// Botao Aura com glow + feedback de press.
+// Botao Aura com glow + feedback de press (scale).
+// Usa Animated padrao do RN — compativel com Expo Go.
+//
 // Variantes: primary | ghost | danger | success
 // Tamanhos: sm | md | lg
 
-import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import React, { useRef } from 'react';
+import { Pressable, StyleSheet, Animated } from 'react-native';
 
 import { colors, glow, radii, motion } from '../../theme';
 
@@ -21,22 +18,24 @@ export default function AuraButton({
   children,
   style,
 }) {
-  const scale = useSharedValue(1);
+  const scale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    scale.value = withTiming(0.96, { duration: motion.duration.fast });
+    Animated.timing(scale, {
+      toValue: 0.96,
+      duration: motion.duration.fast,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handlePressOut = () => {
-    scale.value = withTiming(1, {
+    Animated.timing(scale, {
+      toValue: 1,
       duration: motion.duration.base,
       easing: motion.easing.smooth,
-    });
+      useNativeDriver: true,
+    }).start();
   };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   const v = VARIANTS[variant] ?? VARIANTS.primary;
   const s = SIZES[size] ?? SIZES.md;
@@ -44,7 +43,7 @@ export default function AuraButton({
   return (
     <Animated.View
       style={[
-        animatedStyle,
+        { transform: [{ scale }] },
         v.glow,
         { borderRadius: s.radius, opacity: disabled ? 0.5 : 1 },
         style,
