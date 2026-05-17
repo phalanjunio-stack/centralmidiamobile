@@ -63,6 +63,14 @@
           "cameraPermission": "Permite escanear o QR code do servidor."
         }
       ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Permite usar a camera para fotos e videos do evento.",
+          "enableMicrophonePermission": true,
+          "microphonePermissionText": "Permite gravar audio nos videos."
+        }
+      ],
       "expo-font",
       "expo-image",
       "expo-secure-store"

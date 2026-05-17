@@ -7,7 +7,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import {
+  Camera, useCameraDevice, useCameraFormat,
+  useCameraPermission, useMicrophonePermission,
+} from 'react-native-vision-camera';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -42,11 +45,17 @@ const ZOOM_LEVELS = [
 ];
 
 export default function CameraScreen({ navigation, route }) {
-  const [camPerm, requestCam] = useCameraPermissions();
-  const [micPerm, requestMic] = useMicrophonePermissions();
+  const { hasPermission: camGranted, requestPermission: requestCam } = useCameraPermission();
+  const { hasPermission: micGranted, requestPermission: requestMic } = useMicrophonePermission();
   const cameraRef = useRef(null);
 
   const [facing, setFacing] = useState('back');
+  const device = useCameraDevice(facing);
+  const format = useCameraFormat(device, [
+    { videoResolution: { width: 3840, height: 2160 } },
+    { photoResolution: { width: 4032, height: 3024 } },
+    { fps: 30 },
+  ]);
   const [flash, setFlash]   = useState('off');
   const [mode, setMode]     = useState(route?.params?.initialMode || 'photo');
 
@@ -166,38 +175,47 @@ export default function CameraScreen({ navigation, route }) {
     if (!cameraRef.current || recording) return;
     playRipple();
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.92 });
-      console.log('[Camera] photo captured:', photo.uri);
-      setLastThumb(photo.uri);
-      if (autoUpload) enqueueUpload(photo.uri, 'photo');
+      const photo = await cameraRef.current.takePhoto({
+        flash: flash === 'on' ? 'on' : 'off',
+        enableShutterSound: false,
+      });
+      const uri = `file://${photo.path}`;
+      console.log('[Camera] photo captured:', uri);
+      setLastThumb(uri);
+      if (autoUpload) enqueueUpload(uri, 'photo');
     } catch (e) { console.log('[Camera] takePhoto error:', e.message); }
   }
 
   async function startRecord() {
     if (!cameraRef.current || recording) return;
-    if (!micPerm?.granted) {
-      const res = await requestMic();
-      if (!res?.granted) return;
+    if (!micGranted) {
+      const ok = await requestMic();
+      if (!ok) return;
     }
     recordStartedAtRef.current = Date.now();
     setRecording(true);
-    try {
-      const video = await cameraRef.current.recordAsync({ maxDuration: 60 * 5 });
-      setRecording(false);
-      if (video?.uri) {
-        setLastThumb(video.uri);
-        if (autoUpload) enqueueUpload(video.uri, 'video');
-      }
-    } catch (e) { console.log('[Camera] recordAsync:', e.message); setRecording(false); }
+    cameraRef.current.startRecording({
+      flash: flash === 'on' ? 'on' : 'off',
+      onRecordingFinished: (video) => {
+        setRecording(false);
+        const uri = `file://${video.path}`;
+        setLastThumb(uri);
+        if (autoUpload) enqueueUpload(uri, 'video');
+      },
+      onRecordingError: (error) => {
+        console.log('[Camera] recording error:', error.message);
+        setRecording(false);
+      },
+    });
   }
 
-  function stopRecord() {
+  async function stopRecord() {
     if (!cameraRef.current || !recording) return;
     const elapsed = Date.now() - recordStartedAtRef.current;
     const wait = Math.max(0, 900 - elapsed);
     if (stopRecordTimerRef.current) clearTimeout(stopRecordTimerRef.current);
-    stopRecordTimerRef.current = setTimeout(() => {
-      cameraRef.current?.stopRecording();
+    stopRecordTimerRef.current = setTimeout(async () => {
+      try { await cameraRef.current?.stopRecording(); } catch {}
       stopRecordTimerRef.current = null;
     }, wait);
   }
@@ -236,11 +254,17 @@ export default function CameraScreen({ navigation, route }) {
     }
   }
 
-  function handleScreenTap(e) {
+  async function handleScreenTap(e) {
     const { locationX, locationY } = e.nativeEvent;
     if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
     setFocusPoint({ x: locationX, y: locationY, t: Date.now() });
     focusTimerRef.current = setTimeout(() => setFocusPoint(null), 1400);
+    // Foco real via vision-camera
+    try {
+      if (cameraRef.current && device?.supportsFocus) {
+        await cameraRef.current.focus({ x: locationX, y: locationY });
+      }
+    } catch (err) { console.log('[Camera] focus error:', err.message); }
   }
 
   function handleFlashToggle() {
@@ -280,8 +304,7 @@ export default function CameraScreen({ navigation, route }) {
   }
 
   // Permission gate
-  if (!camPerm) return <View style={styles.permWrap}><ActivityIndicator color={colors.aura.primary} /></View>;
-  if (!camPerm.granted) {
+  if (!camGranted) {
     return (
       <View style={styles.permWrap}>
         <Text style={styles.permTitle}>📷 Câmera necessária</Text>
@@ -289,6 +312,14 @@ export default function CameraScreen({ navigation, route }) {
         <TouchableOpacity style={styles.permBtn} onPress={requestCam}>
           <Text style={styles.permBtnText}>Permitir câmera</Text>
         </TouchableOpacity>
+      </View>
+    );
+  }
+  if (!device) {
+    return (
+      <View style={styles.permWrap}>
+        <ActivityIndicator color={colors.aura.primary} />
+        <Text style={styles.permSub}>Inicializando câmera...</Text>
       </View>
     );
   }
@@ -306,18 +337,20 @@ export default function CameraScreen({ navigation, route }) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      <CameraView
+      <Camera
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
-        facing={facing}
-        flash={flash}
-        mode={mode === 'photo' ? 'picture' : 'video'}
-        videoQuality="2160p"
-        videoBitrate={35000000}
+        device={device}
+        format={format}
+        isActive={true}
+        photo={true}
+        video={true}
+        audio={micGranted}
+        torch={flash === 'on' && mode === 'video' ? 'on' : 'off'}
+        zoom={Math.max(device.minZoom, Math.min(device.maxZoom, 1 + zoom * (device.maxZoom - 1)))}
+        exposure={device.supportsFocus ? exposure * (format?.maxExposure || 1) : 0}
         videoStabilizationMode="auto"
-        zoom={zoom}
-        autofocus="on"
-        exposure={exposure}
+        enableZoomGesture={false}
       />
 
       <View style={StyleSheet.absoluteFill} {...pinchPan.panHandlers}>
@@ -458,7 +491,7 @@ export default function CameraScreen({ navigation, route }) {
               <View style={styles.recDot} />
               <Text style={styles.recText}>REC {recTime}</Text>
             </View>
-            {micPerm?.granted && <VUMeter active={recording} style={{ marginTop: 8 }} />}
+            {micGranted && <VUMeter active={recording} style={{ marginTop: 8 }} />}
           </View>
         )}
 
