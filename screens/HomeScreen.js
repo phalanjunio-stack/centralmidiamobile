@@ -1,48 +1,73 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Image, RefreshControl, FlatList, Dimensions,
+  Image, RefreshControl, FlatList, Dimensions, Animated, Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle as SvgCircle, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
-import {
-  Camera, Image as ImageIcon, Wifi, WifiOff, MapPin, CalendarDays,
-  ChevronRight, CheckCircle2, Upload, Clock, AlertTriangle, Sparkles,
-  ArrowUpRight,
-} from 'lucide-react-native';
+import { ChevronDown } from 'lucide-react-native';
+import Svg, { Defs, RadialGradient as SvgRadialGradient, Stop, Circle as SvgCircle } from 'react-native-svg';
 
-import { colors } from '../theme';
+// Ícones oficiais Contourline
+const IC = {
+  acaoCamera:     require('../assets/icons/acao_camera.png'),
+  acaoGaleria:    require('../assets/icons/acao_galeria.png'),
+  acaoQR:         require('../assets/icons/acao_qr_evento.png'),
+  acaoProjeto:    require('../assets/icons/acao_novo_projeto.png'),
+  acaoSeta:       require('../assets/icons/acao_seta.png'),
+  central:        require('../assets/icons/central_midia_conectada.png'),
+  sinalForte:     require('../assets/icons/sinal_forte.png'),
+  statusFila:     require('../assets/icons/status_fila.png'),
+  statusEnviados: require('../assets/icons/status_enviados.png'),
+  statusSync:     require('../assets/icons/status_sincronizado.png'),
+  notificacao:    require('../assets/icons/notificacao.png'),
+  notificacaoAtiva: require('../assets/icons/notificacao_ativa.png'),
+  calendario:     require('../assets/icons/calendario.png'),
+  localizacao:    require('../assets/icons/localizacao.png'),
+  equipe:         require('../assets/icons/equipe.png'),
+  chevronDir:     require('../assets/icons/chevron_direita.png'),
+  chevronBaixo:   require('../assets/icons/chevron_baixo.png'),
+  favOutline:     require('../assets/icons/favorito_outline.png'),
+  favAtivo:       require('../assets/icons/favorito_ativo.png'),
+  arquivo:        require('../assets/icons/arquivo_imagem.png'),
+  personalizar:   require('../assets/icons/personalizar_sliders.png'),
+};
+
+import { colors } from '../src/theme';
+import { useNetworkStatus } from '../src/services/networkStatus';
+import { useUploads } from '../src/context/UploadContext';
 import LogoIcon from '../components/icons/LogoIcon';
 import BellIcon from '../components/icons/BellIcon';
 import {
-  getSyncStats, getLastSync, getActiveEvent,
-  getDeviceProfile, getServerConfig,
+  getSyncStats, getActiveEvent, getDeviceProfile, getServerConfig,
 } from '../services/storage';
 import { listEvents } from '../services/api';
 
-const { width: SCREEN_W } = Dimensions.get('window');
+const { width: W } = Dimensions.get('window');
+const CARD_W = (W - 48) / 4; // 4 ações em linha
 
 export default function HomeScreen({ navigation }) {
-  const [stats, setStats] = useState({ total: 0, errors: 0 });
-  const [lastSync, setLastSyncTs] = useState(0);
-  const [event, setEvent] = useState(null);
+  const [stats, setStats]     = useState({ synced: 0, uploading: 0, pending: 0, errors: 0 });
+  const [event, setEvent]     = useState(null);
   const [profile, setProfile] = useState(null);
   const [serverUrl, setServerUrl] = useState('');
-  const [events, setEvents] = useState([]);
+  const [serverName, setServerName] = useState('');
+  const [events, setEvents]   = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  const network = useNetworkStatus();
+  const { pendingCount } = useUploads();
+
   async function loadData() {
-    const [s, ts, ev, pr, cfg] = await Promise.all([
-      getSyncStats(), getLastSync(), getActiveEvent(), getDeviceProfile(), getServerConfig(),
+    const [s, ev, pr, cfg] = await Promise.all([
+      getSyncStats(), getActiveEvent(), getDeviceProfile(), getServerConfig(),
     ]);
-    setStats(s);
-    setLastSyncTs(ts);
+    setStats(s || {});
     setEvent(ev);
     setProfile(pr);
     setServerUrl(cfg?.serverUrl || '');
-
+    setServerName(cfg?.serverName || cfg?.pcName || '');
     try {
       const list = await listEvents();
       setEvents(Array.isArray(list?.events) ? list.events : Array.isArray(list) ? list : []);
@@ -57,410 +82,395 @@ export default function HomeScreen({ navigation }) {
     setRefreshing(false);
   }
 
-  function openEvent(ev) {
-    if (ev?.id) navigation.navigate('EventDetail', { eventId: ev.id });
-  }
+  const connected  = !!serverUrl && network.isConnected;
+  const synced     = stats?.synced   ?? 0;
+  const uploading  = stats?.uploading ?? 0;
+  const pending    = pendingCount || stats?.pending || 0;
+  const errs       = stats?.errors   ?? 0;
+  const sentToday  = synced;
+  const syncPct    = (synced + uploading + pending + errs) > 0
+    ? Math.round((synced / (synced + uploading + pending + errs)) * 100) : 0;
 
   const featuredEvents = events.length ? events : (event ? [event] : []);
-  const activeHero = event || featuredEvents[0];
-  const connected = !!serverUrl;
-  const synced    = stats?.synced   ?? stats?.total ?? 0;
-  const pending   = stats?.pending  ?? 0;
-  const errs      = stats?.errors   ?? 0;
-  const total     = synced + (stats?.uploading ?? 0) + pending + errs;
-  const pct       = total > 0 ? Math.round((synced / total) * 100) : 0;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* gradient de fundo sutil */}
-      <View style={styles.bgWash} pointerEvents="none">
-        <LinearGradient
-          colors={['rgba(31,139,255,0.10)', 'rgba(31,139,255,0)']}
-          start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brand} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.aura.primary} />}
       >
-        {/* ── HEADER ───────────────────────────────────────────── */}
+        {/* ── HEADER ── */}
         <View style={styles.header}>
+          {/* Logo esquerda */}
           <View style={styles.brandWrap}>
-            <LogoIcon size={34} color={colors.text} />
+            <LogoIcon size={30} color={colors.text.primary} />
             <View>
-              <Text style={styles.brandText}>contourline</Text>
-              <Text style={styles.brandTag}>Backup · {connected ? 'Online' : 'Offline'}</Text>
+              <Text style={styles.brandName}>contourline</Text>
+              <Text style={styles.brandSub}>BACKUP</Text>
             </View>
           </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <BellIcon size={18} color={colors.text} />
-              <View style={styles.notifDot} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('ProfileTab')}>
-              {profile?.photoUri ? (
-                <Image source={{ uri: profile.photoUri }} style={styles.avatarImg} />
-              ) : (
-                <View style={[styles.avatarImg, styles.avatarPlaceholder]}>
-                  <Text style={styles.avatarInitial}>{(profile?.name || '?').charAt(0).toUpperCase()}</Text>
+
+          {/* Pill central: status do servidor */}
+          <TouchableOpacity
+            style={[styles.serverPill, connected && styles.serverPillActive]}
+            onPress={() => navigation.navigate('ConnectAura')}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.serverPillDot, { backgroundColor: connected ? colors.state.success : colors.state.warning }]} />
+            <Text style={styles.serverPillText} numberOfLines={1}>
+              {connected ? 'Servidor conectado' : 'Sem servidor'}
+            </Text>
+            <ChevronDown size={13} color={colors.text.secondary} strokeWidth={2.5} />
+          </TouchableOpacity>
+
+          {/* Direita: sino + avatar */}
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.bellBtn}>
+              <BellIcon size={18} color={colors.text.secondary} />
+              {errs > 0 && (
+                <View style={styles.bellBadge}>
+                  <Text style={styles.bellBadgeText}>{errs > 9 ? '9+' : errs}</Text>
                 </View>
               )}
-              {connected && <View style={styles.onlineDot} />}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('ProfileTab')}>
+              {profile?.photoUri
+                ? <Image source={{ uri: profile.photoUri }} style={styles.avatar} />
+                : <View style={[styles.avatar, styles.avatarFallback]}>
+                    <Text style={styles.avatarInitial}>{(profile?.name || '?')[0].toUpperCase()}</Text>
+                  </View>
+              }
+              <View style={[styles.onlineDot, { backgroundColor: connected ? colors.state.success : colors.text.muted }]} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* ── GREETING ─────────────────────────────────────────── */}
-        <View style={styles.greetingBlock}>
-          <Text style={styles.greetingHi}>Olá, {(profile?.name || 'fotógrafo').split(' ')[0]}</Text>
-          <Text style={styles.greetingSub}>
-            {connected
-              ? `${pct}% sincronizado · pronto pra capturar`
-              : 'Modo offline · suas capturas vão sincronizar quando conectar'}
-          </Text>
-        </View>
-
-        {/* ── HERO PROJETO ATIVO ───────────────────────────────── */}
-        <HeroProject event={activeHero} serverUrl={serverUrl} isActive={!!event} onPress={() => openEvent(activeHero)} />
-
-        {/* ── STATS TRIO ───────────────────────────────────────── */}
-        <View style={styles.statsRow}>
-          <StatChip
-            icon={<CheckCircle2 size={16} color="#34D399" strokeWidth={2.3} />}
-            value={synced}
-            label="Sincronizadas"
-            tint="#34D399"
-          />
-          <StatChip
-            icon={<Clock size={16} color="#FBBF24" strokeWidth={2.3} />}
-            value={pending}
-            label="Pendentes"
-            tint="#FBBF24"
-          />
-          <StatChip
-            icon={<AlertTriangle size={16} color="#F87171" strokeWidth={2.3} />}
-            value={errs}
-            label="Com erro"
-            tint="#F87171"
-          />
-        </View>
-
-        {/* ── SERVIDOR STATUS ─────────────────────────────────── */}
-        <ServerCard
-          connected={connected}
+        {/* ── HERO: PROJETO ATIVO ── */}
+        <HeroCard
+          event={event || featuredEvents[0]}
           serverUrl={serverUrl}
-          errors={errs}
-          onPress={() => navigation.navigate('Uploads')}
+          isActive={!!event}
+          onPress={() => {
+            const ev = event || featuredEvents[0];
+            if (ev?.id) navigation.navigate('EventDetail', { eventId: ev.id });
+          }}
         />
 
-        {/* ── AÇÕES RÁPIDAS ────────────────────────────────────── */}
-        <SectionHeader title="Ações rápidas" actionLabel="Ver todas" onAction={() => navigation.navigate('QuickActions')} />
+        {/* ── CENTRAL DE MÍDIA ── */}
+        <CentralCard
+          connected={connected}
+          serverUrl={serverUrl}
+          serverName={serverName}
+          networkType={network.type}
+          onPress={() => connected ? navigation.navigate('Uploads') : navigation.navigate('ConnectAura')}
+        />
+
+        {/* ── AÇÕES RÁPIDAS ── */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Ações rápidas</Text>
+          <TouchableOpacity style={styles.sectionActionBtn} onPress={() => navigation.navigate('QuickActions')}>
+            <Text style={styles.sectionActionText}>Personalizar</Text>
+            <Image source={IC.personalizar} style={styles.sectionActionIcon} />
+          </TouchableOpacity>
+        </View>
         <View style={styles.actionsRow}>
-          <PremiumAction
-            gradient={['#1F4DCC', '#0B2A8A']}
-            Icon={Camera}
-            title="Câmera"
-            sub="Foto / vídeo"
-            onPress={() => navigation.navigate('Camera', { initialMode: 'photo' })}
-            featured
-          />
-          <PremiumAction
-            gradient={['#0E9F88', '#065F5A']}
-            Icon={ImageIcon}
-            title="Galeria"
-            sub="Selecionar"
-            onPress={() => navigation.navigate('Gallery')}
-          />
+          <QuickCard img={IC.acaoCamera}   label="Câmera"          sub="Tirar foto ou gravar vídeo"       tint="#1F8BFF" onPress={() => navigation.navigate('Camera')} />
+          <QuickCard img={IC.acaoGaleria}  label="Galeria"         sub="Ver e gerenciar arquivos"          tint="#1F8BFF" onPress={() => navigation.navigate('Gallery')} />
+          <QuickCard img={IC.acaoQR}       label={'Ler QR\ndo evento'} sub="Selecionar evento via QR Code" tint="#7C3AED" onPress={() => navigation.navigate('QRScanner')} />
+          <QuickCard img={IC.acaoProjeto}  label={'Novo\nprojeto'} sub="Criar ou adicionar um projeto"     tint="#7C3AED" onPress={() => navigation.navigate('ProjectsTab')} />
         </View>
 
-        {/* ── EVENTOS ──────────────────────────────────────────── */}
+        {/* ── EVENTOS EM DESTAQUE ── */}
         {featuredEvents.length > 0 && (
           <>
-            <SectionHeader title="Eventos em destaque" actionLabel="Ver todos" onAction={() => navigation.navigate('EventsTab')} />
+            <View style={styles.sectionRow}>
+              <Text style={styles.sectionTitle}>Eventos em destaque</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('ProjectsTab')}>
+                <Text style={styles.sectionActionText}>Ver todos</Text>
+              </TouchableOpacity>
+            </View>
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={featuredEvents.slice(0, 6)}
-              keyExtractor={(item, index) => item.id || String(index)}
+              data={featuredEvents.slice(0, 8)}
+              keyExtractor={(item, i) => item.id || String(i)}
               contentContainerStyle={styles.eventsList}
               renderItem={({ item }) => (
                 <EventCard
                   event={item}
                   serverUrl={serverUrl}
-                  onPress={() => openEvent(item)}
                   isActive={event?.id === item.id}
+                  onPress={() => item?.id && navigation.navigate('EventDetail', { eventId: item.id })}
                 />
               )}
             />
           </>
         )}
 
-        {/* ── SINCRONIZAÇÃO ────────────────────────────────────── */}
-        <SectionHeader title="Sincronização" />
-        <SyncCard stats={stats} pct={pct} />
+        {/* ── STATUS DO DIA ── */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Status do dia</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Uploads')}>
+            <Text style={styles.sectionActionText}>Ver detalhes</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.statsRow}>
+          <DayStatCard img={IC.statusFila}     value={pending}        label="Arquivos na fila" sub="Aguardando envio" />
+          <DayStatCard img={IC.statusEnviados} value={sentToday}       label="Enviados hoje"    sub="Fotos e vídeos" />
+          <DayStatCard img={IC.statusSync}     value={`${syncPct}%`}   label="Sincronizados"   sub="Com Google Drive" />
+        </View>
+
+        <View style={{ height: 24 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-/* ────────────────────────────────────────────────────────────── */
-/* COMPONENTS                                                    */
-/* ────────────────────────────────────────────────────────────── */
+/* ── COMPONENTS ── */
 
-function HeroProject({ event, serverUrl, isActive, onPress }) {
+function HeroCard({ event, serverUrl, isActive, onPress }) {
   const coverUri = getCoverUri(event, serverUrl);
   return (
-    <TouchableOpacity style={styles.heroWrap} activeOpacity={0.9} onPress={onPress}>
-      {/* cover ou placeholder */}
-      <View style={styles.heroCover}>
-        {coverUri ? (
-          <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        ) : (
-          <LinearGradient
-            colors={['#1E3A8A', '#0F1E54', '#040A1F']}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-        )}
-        {/* glow azul cantos */}
-        <LinearGradient
-          colors={['rgba(31,139,255,0.45)', 'rgba(31,139,255,0)']}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-          pointerEvents="none"
-        />
-        {/* overlay escuro pra texto legível */}
-        <LinearGradient
-          colors={['rgba(4,8,18,0)', 'rgba(4,8,18,0.55)', 'rgba(4,8,18,0.92)']}
-          locations={[0, 0.55, 1]}
-          style={StyleSheet.absoluteFill}
-          pointerEvents="none"
-        />
-      </View>
+    <TouchableOpacity style={styles.heroCard} activeOpacity={0.9} onPress={onPress}>
+      {/* Borda azul quando ativo */}
+      {isActive && <View style={styles.heroBorderActive} pointerEvents="none" />}
+      {!isActive && <View style={styles.heroBorderIdle} pointerEvents="none" />}
 
-      {/* badge superior */}
-      <View style={styles.heroBadgeRow}>
-        {isActive ? (
-          <View style={styles.activePill}>
-            <View style={styles.activePillDot} />
-            <Text style={styles.activePillText}>ATIVO AGORA</Text>
+      {/* Conteúdo split: texto esquerda, imagem direita */}
+      <View style={styles.heroInner}>
+        {/* Coluna de texto */}
+        <View style={styles.heroLeft}>
+          <Text style={styles.heroEyebrow}>PROJETO ATIVO</Text>
+          <Text style={styles.heroTitle} numberOfLines={2}>
+            {event?.name || 'Nenhum projeto ativo'}
+          </Text>
+
+          <View style={styles.heroMeta}>
+            <Image source={IC.calendario} style={styles.heroMetaIcon} />
+            <Text style={styles.heroMetaText}>
+              {formatDateFull(event?.startDate, event?.endDate) || '—'}
+            </Text>
           </View>
-        ) : (
-          <View style={styles.idlePill}>
-            <Sparkles size={11} color="#A8C0E0" strokeWidth={2.4} />
-            <Text style={styles.idlePillText}>NENHUMA ATIVIDADE</Text>
+          {event?.location && (
+            <View style={styles.heroMeta}>
+              <Image source={IC.localizacao} style={styles.heroMetaIcon} />
+              <Text style={styles.heroMetaText} numberOfLines={1}>{event.location}</Text>
+            </View>
+          )}
+          <View style={styles.heroMeta}>
+            <Image source={IC.equipe} style={styles.heroMetaIcon} />
+            <Text style={styles.heroMetaText}>Equipe Contourline</Text>
           </View>
-        )}
-        <View style={styles.heroArrow}>
-          <ArrowUpRight size={16} color="#fff" strokeWidth={2.4} />
+
+          {isActive && (
+            <View style={styles.activeBadge}>
+              <View style={styles.activeBadgeDot} />
+              <Text style={styles.activeBadgeText}>ATIVO</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Imagem direita */}
+        <View style={styles.heroRight}>
+          <TouchableOpacity style={styles.heroArrowBtn} activeOpacity={0.8} onPress={onPress}>
+            <Image source={IC.chevronDir} style={styles.heroArrowImg} />
+          </TouchableOpacity>
+          <View style={styles.heroCoverWrap}>
+            {coverUri
+              ? <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              : <LinearGradient colors={['#1E3A8A', '#0B1B4F']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+            }
+            {/* Máscara esquerda — fade pra escuro pra integrar com o texto */}
+            <LinearGradient
+              colors={['rgba(12,17,27,1)', 'rgba(12,17,27,0.6)', 'rgba(12,17,27,0)']}
+              start={{ x: 0, y: 0.5 }} end={{ x: 0.7, y: 0.5 }}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+            {/* Vinheta inferior */}
+            <LinearGradient
+              colors={['rgba(12,17,27,0)', 'rgba(12,17,27,0.5)']}
+              start={{ x: 0.5, y: 0.6 }} end={{ x: 0.5, y: 1 }}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+            {/* Vinheta topo */}
+            <LinearGradient
+              colors={['rgba(12,17,27,0.4)', 'rgba(12,17,27,0)']}
+              start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 0.4 }}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+          </View>
         </View>
       </View>
-
-      {/* info */}
-      <View style={styles.heroInfo}>
-        <Text style={styles.heroTitle} numberOfLines={2}>
-          {event?.name || 'Crie ou escolha uma atividade'}
-        </Text>
-        <View style={styles.heroMetaRow}>
-          <MetaChip Icon={CalendarDays} text={formatRange(event?.startDate, event?.endDate) || '—'} />
-          <MetaChip Icon={MapPin} text={event?.location || 'Sem local'} />
-        </View>
-      </View>
-
-      {/* borda glass */}
-      <View style={styles.heroGlassEdge} pointerEvents="none" />
     </TouchableOpacity>
   );
 }
 
-function MetaChip({ Icon, text }) {
-  return (
-    <View style={styles.metaChip}>
-      <Icon size={11} color="#CBD5E1" strokeWidth={2} />
-      <Text style={styles.metaChipText} numberOfLines={1}>{text}</Text>
-    </View>
-  );
-}
+function CentralCard({ connected, serverUrl, serverName, networkType, onPress }) {
+  const signalBars = networkType === 'wifi' ? 4 : networkType === 'cellular' ? 2 : 0;
+  const signalLabel = signalBars >= 4 ? 'Sinal forte' : signalBars >= 2 ? 'Sinal médio' : 'Sem sinal';
 
-function StatChip({ icon, value, label, tint }) {
   return (
-    <View style={styles.statChip}>
-      <View style={[styles.statTopBar, { backgroundColor: tint, opacity: 0.7 }]} />
-      <View style={styles.statHeader}>
-        {icon}
-        <Text style={styles.statLabel}>{label}</Text>
-      </View>
-      <Text style={styles.statValue}>{String(value).padStart(2, '0')}</Text>
-    </View>
-  );
-}
+    <TouchableOpacity style={styles.centralCard} activeOpacity={0.88} onPress={onPress}>
+      {/* Ícone esquerdo com aura verde animada */}
+      <CentralIcon connected={connected} />
 
-function ServerCard({ connected, serverUrl, errors, onPress }) {
-  const Icon = connected ? Wifi : WifiOff;
-  const tint = connected ? '#34D399' : '#94A3B8';
-  return (
-    <TouchableOpacity style={styles.serverCard} activeOpacity={0.85} onPress={onPress}>
-      <View style={[styles.serverIcon, { backgroundColor: `${tint}1F` }]}>
-        <Icon size={20} color={tint} strokeWidth={2.2} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.serverTitle}>
-          {connected ? 'Servidor conectado' : 'Servidor desconectado'}
+      {/* Texto centro */}
+      <View style={styles.centralInfo}>
+        <Text style={styles.centralTitle}>
+          {connected ? 'Central de Mídia conectada' : 'Central não pareada'}
         </Text>
-        <Text style={styles.serverSub} numberOfLines={1}>
-          {errors > 0 ? `${errors} erro(s) para revisar` : (connected ? 'Tudo sincronizado' : 'Toque pra configurar')}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={styles.centralSub} numberOfLines={1}>
+            {serverName || (serverUrl ? serverUrl.replace(/^https?:\/\//, '').split(':')[0] : 'Toque para conectar')}
+          </Text>
+          {connected && (
+            <TouchableOpacity onPress={onPress}>
+              <Text style={styles.centralDetalhes}>Ver detalhes</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-      <ChevronRight size={18} color="#64748B" strokeWidth={2} />
+
+      {/* Divisor */}
+      <View style={styles.centralDivider} />
+
+      {/* Sinal direita */}
+      <View style={styles.centralSignal}>
+        <Image source={IC.sinalForte} style={[styles.centralSignalImg, signalBars < 3 && { opacity: 0.4 }]} />
+        <Text style={styles.centralSignalText}>{signalLabel}</Text>
+      </View>
     </TouchableOpacity>
   );
 }
 
-function SectionHeader({ title, actionLabel, onAction }) {
+
+function CentralIcon({ connected }) {
+  const pulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!connected) { pulse.setValue(0); return; }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [connected]);
+
+  const haloScale   = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] });
+  const haloOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.75] });
+  const ringScale   = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] });
+
   return (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {actionLabel ? (
-        <TouchableOpacity onPress={onAction} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Text style={styles.sectionAction}>{actionLabel}</Text>
-        </TouchableOpacity>
-      ) : null}
+    <View style={styles.centralIconStage}>
+      {connected && (
+        <Animated.View
+          style={[styles.centralHaloWrap, { opacity: haloOpacity, transform: [{ scale: haloScale }] }]}
+          pointerEvents="none"
+        >
+          <Svg width={84} height={84} viewBox="0 0 100 100">
+            <Defs>
+              <SvgRadialGradient id="ghalo" cx="50%" cy="50%" r="50%">
+                <Stop offset="0%"   stopColor="#00C16A" stopOpacity={0.55} />
+                <Stop offset="40%"  stopColor="#00C16A" stopOpacity={0.22} />
+                <Stop offset="75%"  stopColor="#00C16A" stopOpacity={0.05} />
+                <Stop offset="100%" stopColor="#00C16A" stopOpacity={0} />
+              </SvgRadialGradient>
+            </Defs>
+            <SvgCircle cx={50} cy={50} r={48} fill="url(#ghalo)" />
+          </Svg>
+        </Animated.View>
+      )}
+      {connected && (
+        <Animated.View style={[styles.centralRingPulse, { transform: [{ scale: ringScale }] }]} pointerEvents="none" />
+      )}
+      <View style={[styles.centralIconWrap, { borderColor: connected ? colors.state.success : colors.border.glassHi }]}>
+        <Image source={IC.central} style={[styles.centralIconImg, !connected && { opacity: 0.4 }]} />
+      </View>
     </View>
   );
 }
 
-function PremiumAction({ gradient, Icon, title, sub, onPress, featured }) {
+function QuickCard({ img, label, sub, onPress, tint = '#1F8BFF' }) {
+  return (
+    <TouchableOpacity style={styles.qaCard} activeOpacity={0.85} onPress={onPress}>
+      <View style={[styles.qaIconWrap, { backgroundColor: `${tint}18`, borderColor: `${tint}33` }]}>
+        <Image source={img} style={styles.qaIconImg} />
+      </View>
+      <Text style={styles.qaLabel}>{label}</Text>
+      <Text style={styles.qaSub}>{sub}</Text>
+      <View style={[styles.qaArrow, { backgroundColor: `${tint}18`, borderColor: `${tint}33` }]}>
+        <Image source={IC.acaoSeta} style={[styles.qaArrowImg, { tintColor: tint }]} />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function EventCard({ event, serverUrl, isActive, onPress }) {
+  const coverUri = getCoverUri(event, serverUrl);
   return (
     <TouchableOpacity
-      style={[styles.action, featured && styles.actionFeatured]}
+      style={[styles.eventCard, isActive && styles.eventCardActive]}
       activeOpacity={0.88}
       onPress={onPress}
     >
-      <LinearGradient
-        colors={gradient}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-      {/* shine layer */}
-      <LinearGradient
-        colors={['rgba(255,255,255,0.18)', 'rgba(255,255,255,0)']}
-        start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}
-        style={[StyleSheet.absoluteFill, { height: '50%' }]}
-        pointerEvents="none"
-      />
-      <View style={styles.actionIconWrap}>
-        <Icon size={26} color="#fff" strokeWidth={2.1} />
-      </View>
-      <View>
-        <Text style={styles.actionTitle}>{title}</Text>
-        <Text style={styles.actionSub}>{sub}</Text>
-      </View>
-      <View style={styles.actionArrow}>
-        <ArrowUpRight size={14} color="rgba(255,255,255,0.85)" strokeWidth={2.4} />
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-function EventCard({ event, serverUrl, onPress, isActive }) {
-  const coverUri = getCoverUri(event, serverUrl);
-  return (
-    <TouchableOpacity style={styles.eventCard} activeOpacity={0.88} onPress={onPress}>
+      {/* Cover */}
       <View style={styles.eventCover}>
-        {coverUri ? (
-          <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        ) : (
-          <LinearGradient
-            colors={['#1E3A8A', '#0B1B4F']}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-        )}
-        <LinearGradient
-          colors={['transparent', 'rgba(4,8,18,0.85)']}
-          style={StyleSheet.absoluteFill}
-          pointerEvents="none"
-        />
-        {isActive ? (
-          <View style={styles.eventActiveBadge}>
-            <View style={styles.activePillDot} />
-            <Text style={styles.eventActiveText}>ATIVO</Text>
-          </View>
-        ) : null}
-        <Text style={styles.eventDateOverlay}>{formatRange(event?.startDate, event?.endDate)}</Text>
-      </View>
-      <Text style={styles.eventName} numberOfLines={2}>{event?.name || 'Atividade'}</Text>
-      {event?.location || event?.locationCity ? (
-        <View style={styles.eventMeta}>
-          <MapPin size={11} color="#94A3B8" strokeWidth={2} />
-          <Text style={styles.eventMetaText} numberOfLines={1}>
-            {event.location || event.locationCity}
-          </Text>
+        {coverUri
+          ? <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          : <LinearGradient colors={['#1E3A8A', '#0B1B4F']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+        }
+        <LinearGradient colors={['transparent', 'rgba(4,8,18,0.85)']} style={StyleSheet.absoluteFill} pointerEvents="none" />
+
+        {/* Badges topo */}
+        <View style={styles.eventBadgeRow}>
+          {isActive && (
+            <View style={styles.eventActivePill}>
+              <Text style={styles.eventActivePillText}>ATIVO</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.starBtn}>
+            <Image source={isActive ? IC.favAtivo : IC.favOutline} style={styles.starImg} />
+          </TouchableOpacity>
         </View>
-      ) : null}
+      </View>
+
+      {/* Info */}
+      <View style={styles.eventInfo}>
+        <Text style={styles.eventName} numberOfLines={2}>{event?.name || 'Atividade'}</Text>
+        <Text style={styles.eventDate}>{formatRange(event?.startDate, event?.endDate)}</Text>
+        {event?.location && (
+          <Text style={styles.eventLoc} numberOfLines={1}>{event.location}</Text>
+        )}
+        {event?.fileCount != null && (
+          <View style={styles.eventFileRow}>
+            <Image source={IC.arquivo} style={styles.eventFileIcon} />
+            <Text style={styles.eventFileCount}>{event.fileCount} arquivos</Text>
+          </View>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
 
-function SyncCard({ stats, pct }) {
-  const synced   = stats?.synced   ?? stats?.total ?? 0;
-  const uploading= stats?.uploading ?? 0;
-  const pending  = stats?.pending  ?? 0;
-  const errors   = stats?.errors   ?? 0;
-
-  const R = 44;
-  const CIRC = 2 * Math.PI * R;
-  const dash = CIRC * (pct / 100);
-
+function DayStatCard({ img, value, label, sub }) {
   return (
-    <View style={styles.syncCard}>
-      <View style={styles.syncRingWrap}>
-        <Svg width={120} height={120} viewBox="0 0 120 120">
-          <Defs>
-            <SvgGrad id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor="#5AAEFF" />
-              <Stop offset="1" stopColor="#1F8BFF" />
-            </SvgGrad>
-          </Defs>
-          <SvgCircle cx={60} cy={60} r={R} stroke="rgba(255,255,255,0.06)" strokeWidth={8} fill="none" />
-          <SvgCircle
-            cx={60} cy={60} r={R}
-            stroke="url(#ringGrad)"
-            strokeWidth={8}
-            fill="none"
-            strokeDasharray={`${dash} ${CIRC}`}
-            strokeLinecap="round"
-            transform="rotate(-90 60 60)"
-          />
-        </Svg>
-        <View style={styles.syncRingCenter}>
-          <Text style={styles.syncPct}>{pct}%</Text>
-          <Text style={styles.syncPctLabel}>Enviado</Text>
-        </View>
-      </View>
-
-      <View style={styles.syncStats}>
-        <SyncRow icon={<CheckCircle2 size={16} color="#34D399" strokeWidth={2.2} />} label="Enviados"  value={synced}    color="#34D399" />
-        <SyncRow icon={<Upload       size={16} color="#60A5FA" strokeWidth={2.2} />} label="Enviando"  value={uploading} color="#60A5FA" />
-        <SyncRow icon={<Clock        size={16} color="#FBBF24" strokeWidth={2.2} />} label="Pendentes" value={pending}   color="#FBBF24" />
-        <SyncRow icon={<AlertTriangle size={16} color="#F87171" strokeWidth={2.2} />} label="Com erro"  value={errors}    color="#F87171" />
-      </View>
+    <View style={styles.statCard}>
+      <Image source={img} style={styles.statImg} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statSub}>{sub}</Text>
     </View>
   );
 }
 
-function SyncRow({ icon, label, value, color }) {
-  return (
-    <View style={styles.syncRow}>
-      <View style={styles.syncRowIcon}>{icon}</View>
-      <Text style={styles.syncRowLabel}>{label}</Text>
-      <Text style={[styles.syncRowValue, { color }]}>{String(value).padStart(2, '0')}</Text>
-    </View>
-  );
-}
+/* ── UTILS ── */
 
 function getCoverUri(event, serverUrl) {
   if (!event?.coverUrl) return null;
@@ -471,234 +481,210 @@ function formatRange(start, end) {
   if (!start) return '';
   const s = new Date(start);
   const e = end ? new Date(end) : null;
-  const fmt = (d) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
   if (!e || s.toDateString() === e.toDateString()) return fmt(s);
   return `${fmt(s)} – ${fmt(e)}`;
 }
 
-/* ────────────────────────────────────────────────────────────── */
-/* STYLES                                                        */
-/* ────────────────────────────────────────────────────────────── */
+function formatDateFull(start, end) {
+  if (!start) return '';
+  const s = new Date(start);
+  const e = end ? new Date(end) : null;
+  const m = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  if (!e || s.toDateString() === e.toDateString()) return fmt(s);
+  return `${fmt(s)} até ${fmt(e)}`;
+}
+
+/* ── STYLES ── */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  bgWash: { position: 'absolute', top: 0, left: 0, right: 0, height: 360 },
-  content: { paddingBottom: 130 },
+  safe: { flex: 1, backgroundColor: colors.bg.base },
+  content: { paddingBottom: 120 },
 
   /* HEADER */
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 18, paddingTop: 10, paddingBottom: 8,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14,
+    gap: 8,
   },
-  brandWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  brandText: { color: colors.text, fontSize: 19, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.3, lineHeight: 22 },
-  brandTag: { color: '#64748B', fontSize: 10.5, fontFamily: 'Inter_600SemiBold', letterSpacing: 1.5, marginTop: 1, textTransform: 'uppercase' },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  iconBtn: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    alignItems: 'center', justifyContent: 'center',
-    position: 'relative',
-  },
-  notifDot: {
-    position: 'absolute', top: 8, right: 10,
-    width: 7, height: 7, borderRadius: 4,
-    backgroundColor: '#F87171', borderWidth: 1.5, borderColor: colors.bg,
-  },
-  avatarBtn: { position: 'relative' },
-  avatarImg: { width: 40, height: 40, borderRadius: 20 },
-  avatarPlaceholder: { backgroundColor: '#1E3A8A', alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { color: '#fff', fontSize: 15, fontFamily: 'Inter_800ExtraBold' },
-  onlineDot: {
-    position: 'absolute', right: -1, bottom: -1,
-    width: 12, height: 12, borderRadius: 6,
-    backgroundColor: '#10B981', borderWidth: 2, borderColor: colors.bg,
-  },
+  brandWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  brandName: { color: colors.text.primary, fontSize: 16, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.3 },
+  brandSub: { color: colors.text.muted, fontSize: 8.5, fontFamily: 'Inter_700Bold', letterSpacing: 2 },
 
-  /* GREETING */
-  greetingBlock: { paddingHorizontal: 18, marginTop: 6, marginBottom: 18 },
-  greetingHi: { color: '#fff', fontSize: 26, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.5 },
-  greetingSub: { color: '#94A3B8', fontSize: 13, marginTop: 4, fontFamily: 'Inter_500Medium' },
+  serverPill: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: colors.bg.surface,
+    borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7,
+    borderWidth: 1, borderColor: colors.border.glass,
+  },
+  serverPillActive: { borderColor: 'rgba(0,193,106,0.3)' },
+  serverPillDot: { width: 7, height: 7, borderRadius: 4 },
+  serverPillText: { color: colors.text.secondary, fontSize: 12, fontFamily: 'Inter_600SemiBold', flex: 1 },
+
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  bellBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.bg.surface, borderWidth: 1, borderColor: colors.border.glass, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  bellBadge: { position: 'absolute', top: 4, right: 4, minWidth: 16, height: 16, borderRadius: 8, backgroundColor: colors.aura.primary, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, borderWidth: 1.5, borderColor: colors.bg.base },
+  bellBadgeText: { color: '#fff', fontSize: 9, fontFamily: 'Inter_700Bold' },
+  avatarBtn: { position: 'relative' },
+  avatar: { width: 36, height: 36, borderRadius: 18 },
+  avatarFallback: { backgroundColor: colors.aura.primaryDim, alignItems: 'center', justifyContent: 'center' },
+  avatarInitial: { color: '#fff', fontSize: 14, fontFamily: 'Inter_800ExtraBold' },
+  onlineDot: { position: 'absolute', right: -1, bottom: -1, width: 11, height: 11, borderRadius: 6, borderWidth: 2, borderColor: colors.bg.base },
 
   /* HERO */
-  heroWrap: {
-    marginHorizontal: 16,
-    borderRadius: 22,
+  heroCard: {
+    marginHorizontal: 16, marginBottom: 12,
+    borderRadius: 18,
+    backgroundColor: colors.bg.surface,
     overflow: 'hidden',
-    backgroundColor: colors.card,
-    minHeight: 190,
-    position: 'relative',
   },
-  heroCover: { ...StyleSheet.absoluteFillObject },
-  heroGlassEdge: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
+  heroBorderActive: {
+    ...StyleSheet.absoluteFillObject, borderRadius: 18,
+    borderWidth: 1.5, borderColor: 'rgba(0,193,106,0.5)',
   },
-  heroBadgeRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingTop: 16, paddingHorizontal: 16,
+  heroBorderIdle: {
+    ...StyleSheet.absoluteFillObject, borderRadius: 18,
+    borderWidth: 1, borderColor: colors.border.glassHi,
   },
-  activePill: {
+  heroInner: { flexDirection: 'row', minHeight: 180 },
+
+  heroLeft: { flex: 1, padding: 18, justifyContent: 'center', gap: 6 },
+  heroEyebrow: { color: colors.text.muted, fontSize: 9.5, fontFamily: 'Inter_700Bold', letterSpacing: 2, textTransform: 'uppercase' },
+  heroTitle: { color: colors.text.primary, fontSize: 22, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.5, lineHeight: 26, marginTop: 2 },
+  heroMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  heroMetaText: { color: colors.text.tertiary, fontSize: 11.5, fontFamily: 'Inter_500Medium', flex: 1 },
+  activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(16,185,129,0.18)',
-    borderColor: 'rgba(52,211,153,0.45)', borderWidth: 1,
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
+    backgroundColor: 'rgba(0,193,106,0.15)', borderColor: 'rgba(0,193,106,0.4)', borderWidth: 1,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, alignSelf: 'flex-start', marginTop: 8,
   },
-  activePillDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#34D399' },
-  activePillText: { color: '#34D399', fontSize: 10, fontFamily: 'Inter_800ExtraBold', letterSpacing: 1 },
-  idlePill: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderColor: 'rgba(255,255,255,0.10)', borderWidth: 1,
-    paddingHorizontal: 9, paddingVertical: 4, borderRadius: 999,
-  },
-  idlePillText: { color: '#CBD5E1', fontSize: 10, fontFamily: 'Inter_800ExtraBold', letterSpacing: 1 },
-  heroArrow: {
-    width: 32, height: 32, borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.10)',
-    borderColor: 'rgba(255,255,255,0.18)', borderWidth: 1,
+  activeBadgeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.state.success },
+  activeBadgeText: { color: colors.state.success, fontSize: 10, fontFamily: 'Inter_800ExtraBold', letterSpacing: 0.8 },
+
+  heroRight: { width: 140, position: 'relative' },
+  heroArrowBtn: {
+    position: 'absolute', top: 12, right: 12, zIndex: 2,
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
-  heroInfo: { padding: 16, paddingTop: 80 },
-  heroTitle: { color: '#fff', fontSize: 22, lineHeight: 26, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.4 },
-  heroMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  metaChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderColor: 'rgba(255,255,255,0.10)', borderWidth: 1,
-    paddingHorizontal: 9, paddingVertical: 5, borderRadius: 8,
-  },
-  metaChipText: { color: '#CBD5E1', fontSize: 11.5, fontFamily: 'Inter_600SemiBold' },
+  heroCoverWrap: { flex: 1, overflow: 'hidden' },
 
-  /* STATS */
-  statsRow: {
-    flexDirection: 'row', gap: 10,
-    marginHorizontal: 16, marginTop: 14,
-  },
-  statChip: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1,
-    borderRadius: 14, padding: 12, paddingTop: 14,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  statTopBar: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-  },
-  statHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-  statLabel: { color: '#94A3B8', fontSize: 10.5, fontFamily: 'Inter_600SemiBold', letterSpacing: 0.3 },
-  statValue: { color: '#fff', fontSize: 24, fontFamily: 'Inter_800ExtraBold', fontVariant: ['tabular-nums'], letterSpacing: -0.8 },
-
-  /* SERVER */
-  serverCard: {
-    marginHorizontal: 16, marginTop: 12,
+  /* CENTRAL */
+  centralCard: {
+    marginHorizontal: 16, marginBottom: 12,
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    padding: 12,
+    backgroundColor: colors.bg.surface,
+    borderRadius: 16, borderWidth: 1, borderColor: colors.border.glassHi,
+    padding: 14,
   },
-  serverIcon: {
-    width: 40, height: 40, borderRadius: 12,
+  centralIconWrap: {
+    width: 52, height: 52, borderRadius: 26,
+    borderWidth: 1.5, overflow: 'hidden',
     alignItems: 'center', justifyContent: 'center',
   },
-  serverTitle: { color: '#F1F5F9', fontSize: 14, fontFamily: 'Inter_700Bold' },
-  serverSub: { color: '#94A3B8', fontSize: 11.5, marginTop: 2, fontFamily: 'Inter_500Medium' },
+  centralInfo: { flex: 1 },
+  centralTitle: { color: colors.text.primary, fontSize: 13.5, fontFamily: 'Inter_700Bold' },
+  centralSub: { color: colors.text.tertiary, fontSize: 11.5, fontFamily: 'Inter_500Medium' },
+  centralDetalhes: { color: colors.aura.primary, fontSize: 11.5, fontFamily: 'Inter_700Bold' },
+  centralDivider: { width: 1, height: 36, backgroundColor: colors.border.glass },
+  centralSignal: { alignItems: 'center', gap: 5, paddingLeft: 4 },
+  centralSignalText: { color: colors.text.tertiary, fontSize: 10, fontFamily: 'Inter_600SemiBold' },
 
-  /* SECTION HEADER */
-  sectionHeader: {
+  /* SECTION */
+  sectionRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 18, marginTop: 26, marginBottom: 12,
+    paddingHorizontal: 16, marginTop: 22, marginBottom: 12,
   },
-  sectionTitle: { color: '#F1F5F9', fontSize: 17, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.3 },
-  sectionAction: { color: '#5AAEFF', fontSize: 12.5, fontFamily: 'Inter_700Bold' },
+  sectionTitle: { color: colors.text.primary, fontSize: 17, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.3 },
+  sectionActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  sectionActionText: { color: colors.aura.primary, fontSize: 12.5, fontFamily: 'Inter_700Bold' },
 
-  /* ACTIONS */
-  actionsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16 },
-  action: {
-    flex: 1, minHeight: 124, borderRadius: 18,
-    padding: 14, justifyContent: 'space-between',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)',
-    overflow: 'hidden', position: 'relative',
+  /* QUICK ACTIONS */
+  actionsRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 6 },
+  qaCard: {
+    flex: 1, backgroundColor: colors.bg.surface,
+    borderRadius: 14, borderWidth: 1, borderColor: colors.border.glass,
+    padding: 12, alignItems: 'center', gap: 6,
   },
-  actionFeatured: { flex: 1.15 },
-  actionIconWrap: {
-    width: 44, height: 44, borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    borderColor: 'rgba(255,255,255,0.22)', borderWidth: 1,
+  qaIconWrap: {
+    width: 50, height: 50, borderRadius: 14,
+    backgroundColor: 'rgba(31,139,255,0.08)', borderColor: 'rgba(31,139,255,0.2)', borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
-  actionTitle: { color: '#fff', fontSize: 16, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.3 },
-  actionSub: { color: 'rgba(255,255,255,0.78)', fontSize: 11.5, marginTop: 2, fontFamily: 'Inter_600SemiBold' },
-  actionArrow: {
-    position: 'absolute', top: 14, right: 14,
+  qaLabel: { color: colors.text.primary, fontSize: 11, fontFamily: 'Inter_800ExtraBold', textAlign: 'center', letterSpacing: -0.2 },
+  qaSub: { color: colors.text.muted, fontSize: 9, fontFamily: 'Inter_500Medium', textAlign: 'center', lineHeight: 12 },
+  qaArrow: {
     width: 26, height: 26, borderRadius: 13,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(31,139,255,0.12)', borderColor: 'rgba(31,139,255,0.2)', borderWidth: 1,
+    alignItems: 'center', justifyContent: 'center', marginTop: 4,
   },
 
-  /* EVENTS */
+  /* EVENTOS */
   eventsList: { paddingHorizontal: 16, gap: 10 },
   eventCard: {
-    width: 156,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1,
-    padding: 8,
+    width: 172, borderRadius: 16,
+    backgroundColor: colors.bg.surface,
+    borderColor: colors.border.glass, borderWidth: 1,
+    overflow: 'hidden',
   },
-  eventCover: {
-    width: '100%', aspectRatio: 1.05, borderRadius: 12,
-    overflow: 'hidden', backgroundColor: colors.cardElev,
-    position: 'relative',
+  eventCardActive: { borderColor: colors.aura.primary, borderWidth: 1.5 },
+  eventCover: { height: 116, position: 'relative' },
+  eventBadgeRow: {
+    position: 'absolute', top: 8, left: 8, right: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
-  eventActiveBadge: {
-    position: 'absolute', left: 8, top: 8,
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: 'rgba(16,185,129,0.85)',
-    paddingHorizontal: 7, paddingVertical: 3, borderRadius: 7,
+  eventActivePill: {
+    backgroundColor: colors.state.success, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
   },
-  eventActiveText: { color: '#fff', fontSize: 9, fontFamily: 'Inter_800ExtraBold', letterSpacing: 0.8 },
-  eventDateOverlay: {
-    position: 'absolute', right: 8, bottom: 8,
-    color: '#fff', fontSize: 10.5, fontFamily: 'Inter_700Bold',
+  eventActivePillText: { color: '#fff', fontSize: 9, fontFamily: 'Inter_800ExtraBold', letterSpacing: 0.8 },
+  starBtn: {
+    width: 26, height: 26, borderRadius: 13,
+    backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center',
   },
-  eventName: { color: '#F1F5F9', fontSize: 13.5, lineHeight: 17, marginTop: 10, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.2 },
-  eventMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 5 },
-  eventMetaText: { color: '#94A3B8', fontSize: 11, fontFamily: 'Inter_500Medium', flex: 1 },
+  eventInfo: { padding: 10, gap: 3 },
+  eventName: { color: colors.text.primary, fontSize: 13, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.2, lineHeight: 16 },
+  eventDate: { color: colors.text.tertiary, fontSize: 10.5, fontFamily: 'Inter_600SemiBold', marginTop: 2 },
+  eventLoc: { color: colors.text.muted, fontSize: 10, fontFamily: 'Inter_500Medium' },
+  eventFileRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
+  eventFileCount: { color: colors.text.muted, fontSize: 10, fontFamily: 'Inter_500Medium' },
 
-  /* SYNC CARD */
-  syncCard: {
-    marginHorizontal: 16,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1,
-    padding: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
+  /* STATS DO DIA */
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16 },
+  statCard: {
+    flex: 1, backgroundColor: colors.bg.surface,
+    borderRadius: 14, borderWidth: 1, borderColor: colors.border.glass,
+    padding: 12, alignItems: 'center', gap: 4,
   },
-  syncRingWrap: {
-    width: 120, height: 120,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  syncRingCenter: {
+  statImg: { width: 36, height: 36, resizeMode: 'contain', marginBottom: 4 },
+  statValue: { color: colors.text.primary, fontSize: 22, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.8, fontVariant: ['tabular-nums'] },
+  statLabel: { color: colors.text.secondary, fontSize: 11, fontFamily: 'Inter_700Bold', textAlign: 'center' },
+  statSub: { color: colors.text.muted, fontSize: 10, fontFamily: 'Inter_500Medium', textAlign: 'center' },
+
+  // Hero meta
+  heroMetaIcon: { width: 13, height: 13, resizeMode: 'contain', opacity: 0.6 },
+  heroArrowImg: { width: 14, height: 14, resizeMode: 'contain', tintColor: '#fff' },
+
+  // Central
+  centralIconImg: { width: 32, height: 32, resizeMode: 'contain' },
+  centralIconStage: { width: 54, height: 54, alignItems: 'center', justifyContent: 'center' },
+  centralHaloWrap: { position: 'absolute', width: 84, height: 84, alignItems: 'center', justifyContent: 'center' },
+  centralRingPulse: {
     position: 'absolute',
-    alignItems: 'center', justifyContent: 'center',
+    width: 60, height: 60, borderRadius: 30,
+    borderWidth: 1.2, borderColor: 'rgba(0,193,106,0.45)',
   },
-  syncPct: { color: '#fff', fontSize: 22, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.6 },
-  syncPctLabel: { color: '#94A3B8', fontSize: 10.5, fontFamily: 'Inter_600SemiBold', marginTop: 1, letterSpacing: 0.3 },
-  syncStats: { flex: 1 },
-  syncRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 9 },
-  syncRowIcon: {
-    width: 26, height: 26, borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    alignItems: 'center', justifyContent: 'center',
-    marginRight: 9,
-  },
-  syncRowLabel: { flex: 1, color: '#CBD5E1', fontSize: 12.5, fontFamily: 'Inter_600SemiBold' },
-  syncRowValue: { fontSize: 14, fontFamily: 'Inter_800ExtraBold', fontVariant: ['tabular-nums'] },
+  centralSignalImg: { width: 32, height: 26, resizeMode: 'contain' },
+
+  // Quick actions
+  qaIconImg: { width: 28, height: 28, resizeMode: 'contain' },
+  qaArrowImg: { width: 14, height: 14, resizeMode: 'contain' },
+
+  // Section icon
+  sectionActionIcon: { width: 14, height: 14, resizeMode: 'contain', tintColor: colors.aura.primary },
+
+  // Event
+  starImg: { width: 14, height: 14, resizeMode: 'contain' },
+  eventFileIcon: { width: 11, height: 11, resizeMode: 'contain', opacity: 0.5 },
 });

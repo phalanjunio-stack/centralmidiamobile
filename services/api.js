@@ -133,15 +133,20 @@ export async function uploadCapture({ uri, mediaType, activeEvent, profile, onPr
   const headers = await authHeaders();
   const url = config.serverUrl.replace(/\/$/, '') + '/api/upload/mobile';
 
+  // ⚠ NÃO setar Content-Type: o RN precisa gerar com o boundary automaticamente.
+  // Setar 'multipart/form-data' sem boundary quebra o multer no server.
   const res = await fetch(url, {
     method: 'POST',
-    headers: { ...headers, 'Content-Type': 'multipart/form-data' },
+    headers: { ...headers, Accept: 'application/json' },
     body: fd,
   });
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(text || `HTTP ${res.status}`);
+    let msg = text;
+    try { const j = JSON.parse(text); msg = j.error || j.message || text; } catch {}
+    console.log('[uploadCapture] HTTP', res.status, msg, 'url=', url);
+    throw new Error(msg || `HTTP ${res.status}`);
   }
   return await res.json();
 }
