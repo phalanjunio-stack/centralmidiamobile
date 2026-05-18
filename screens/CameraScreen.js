@@ -8,7 +8,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
-  Camera, useCameraDevice, useCameraFormat,
+  Camera, useCameraDevice,
+  usePhotoOutput, useVideoOutput,
   useCameraPermission, useMicrophonePermission,
 } from 'react-native-vision-camera';
 import { useFocusEffect } from '@react-navigation/native';
@@ -51,11 +52,16 @@ export default function CameraScreen({ navigation, route }) {
 
   const [facing, setFacing] = useState('back');
   const device = useCameraDevice(facing);
-  const format = useCameraFormat(device, [
-    { videoResolution: { width: 3840, height: 2160 } },
-    { photoResolution: { width: 4032, height: 3024 } },
-    { fps: 30 },
-  ]);
+
+  // v5: outputs separados substituem o useCameraFormat
+  const photoOutput = usePhotoOutput({ quality: 0.92 });
+  const videoOutput = useVideoOutput({
+    enableAudio: micGranted,
+    targetResolution: { width: 1920, height: 1080 },
+  });
+
+  const recorderRef = useRef(null);
+
   const [flash, setFlash]   = useState('off');
   const [mode, setMode]     = useState(route?.params?.initialMode || 'photo');
 
@@ -175,11 +181,13 @@ export default function CameraScreen({ navigation, route }) {
     if (!cameraRef.current || recording) return;
     playRipple();
     try {
-      const photo = await cameraRef.current.takePhoto({
-        flash: flash === 'on' ? 'on' : 'off',
-        enableShutterSound: false,
-      });
-      const uri = `file://${photo.path}`;
+      const photoFile = await photoOutput.capturePhotoToFile(
+        { flashMode: flash === 'on' ? 'on' : 'off', enableShutterSound: false },
+        {}
+      );
+      const uri = photoFile.filePath.startsWith('file://')
+        ? photoFile.filePath
+        : `file://${photoFile.filePath}`;
       console.log('[Camera] photo captured:', uri);
       setLastThumb(uri);
       if (autoUpload) enqueueUpload(uri, 'photo');
@@ -187,35 +195,43 @@ export default function CameraScreen({ navigation, route }) {
   }
 
   async function startRecord() {
-    if (!cameraRef.current || recording) return;
+    if (recording) return;
     if (!micGranted) {
       const ok = await requestMic();
       if (!ok) return;
     }
     recordStartedAtRef.current = Date.now();
     setRecording(true);
-    cameraRef.current.startRecording({
-      flash: flash === 'on' ? 'on' : 'off',
-      onRecordingFinished: (video) => {
-        setRecording(false);
-        const uri = `file://${video.path}`;
-        setLastThumb(uri);
-        if (autoUpload) enqueueUpload(uri, 'video');
-      },
-      onRecordingError: (error) => {
-        console.log('[Camera] recording error:', error.message);
-        setRecording(false);
-      },
-    });
+    try {
+      const recorder = await videoOutput.createRecorder({});
+      recorderRef.current = recorder;
+      recorder.startRecording(
+        (filePath) => {
+          setRecording(false);
+          recorderRef.current = null;
+          const uri = filePath.startsWith('file://') ? filePath : `file://${filePath}`;
+          setLastThumb(uri);
+          if (autoUpload) enqueueUpload(uri, 'video');
+        },
+        (error) => {
+          console.log('[Camera] recording error:', error?.message);
+          setRecording(false);
+          recorderRef.current = null;
+        }
+      );
+    } catch (e) {
+      console.log('[Camera] createRecorder error:', e.message);
+      setRecording(false);
+    }
   }
 
   async function stopRecord() {
-    if (!cameraRef.current || !recording) return;
+    if (!recorderRef.current || !recording) return;
     const elapsed = Date.now() - recordStartedAtRef.current;
     const wait = Math.max(0, 900 - elapsed);
     if (stopRecordTimerRef.current) clearTimeout(stopRecordTimerRef.current);
     stopRecordTimerRef.current = setTimeout(async () => {
-      try { await cameraRef.current?.stopRecording(); } catch {}
+      try { await recorderRef.current?.stopRecording(); } catch {}
       stopRecordTimerRef.current = null;
     }, wait);
   }
@@ -259,11 +275,9 @@ export default function CameraScreen({ navigation, route }) {
     if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
     setFocusPoint({ x: locationX, y: locationY, t: Date.now() });
     focusTimerRef.current = setTimeout(() => setFocusPoint(null), 1400);
-    // Foco real via vision-camera
+    // Foco real via vision-camera v5
     try {
-      if (cameraRef.current && device?.supportsFocus) {
-        await cameraRef.current.focus({ x: locationX, y: locationY });
-      }
+      await cameraRef.current?.focusTo({ x: locationX, y: locationY });
     } catch (err) { console.log('[Camera] focus error:', err.message); }
   }
 
@@ -341,16 +355,11 @@ export default function CameraScreen({ navigation, route }) {
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
         device={device}
-        format={format}
+        outputs={mode === 'video' ? [photoOutput, videoOutput] : [photoOutput]}
         isActive={true}
-        photo={true}
-        video={true}
-        audio={micGranted}
-        torch={flash === 'on' && mode === 'video' ? 'on' : 'off'}
-        zoom={Math.max(device.minZoom, Math.min(device.maxZoom, 1 + zoom * (device.maxZoom - 1)))}
-        exposure={device.supportsFocus ? exposure * (format?.maxExposure || 1) : 0}
-        videoStabilizationMode="auto"
-        enableZoomGesture={false}
+        zoom={Math.max(device.minZoom ?? 1, Math.min(device.maxZoom ?? 10, 1 + zoom * ((device.maxZoom ?? 10) - 1)))}
+        exposure={exposure}
+        torchMode={flash === 'on' && mode === 'video' ? 'on' : 'off'}
       />
 
       <View style={StyleSheet.absoluteFill} {...pinchPan.panHandlers}>
@@ -427,7 +436,7 @@ export default function CameraScreen({ navigation, route }) {
               Icon={({ size, color }) => (
                 <View style={{ width: size*0.55, height: size*0.55, borderRadius: size*0.275, borderWidth: 1.6, borderColor: color }} />
               )}
-              middle={exposure >= 0 ? `+${exposure.toFixed(1)}` : exposure.toFixed(1)}
+              middle={exposure >= 0 ? `+${(exposure).toFixed(1)}` : `${(exposure).toFixed(1)}`}
               bottomLabel="EXPOSIÇÃO"
               onPress={() => setShowExposure(v => !v)}
               active={showExposure}
@@ -495,7 +504,12 @@ export default function CameraScreen({ navigation, route }) {
           </View>
         )}
 
-        <ExposureSlider value={exposure} onChange={setExposure} visible={showExposure} />
+        {/* slider retorna -1..1, Camera v5 espera bias real (-4..+4) */}
+        <ExposureSlider
+          value={exposure / 4}
+          onChange={(v) => setExposure(v * 4)}
+          visible={showExposure}
+        />
 
         {/* ── CAPTURE ROW ── */}
         <View style={styles.captureRow}>
