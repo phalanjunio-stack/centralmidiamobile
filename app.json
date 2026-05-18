@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.contourline.mobile",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "O app precisa acessar sua galeria para fazer backup automático das fotos.",
-        "NSCameraUsageDescription": "O app usa a câmera para escanear o QR code do servidor.",
+        "NSCameraUsageDescription": "O app usa a câmera para fotografar e gravar vídeos nos eventos.",
+        "NSMicrophoneUsageDescription": "O app usa o microfone para gravar áudio nos vídeos dos eventos.",
         "UIBackgroundModes": [
           "fetch",
           "processing"
@@ -35,6 +36,7 @@
         "READ_MEDIA_VIDEO",
         "READ_EXTERNAL_STORAGE",
         "CAMERA",
+        "RECORD_AUDIO",
         "RECEIVE_BOOT_COMPLETED",
         "FOREGROUND_SERVICE"
       ]
@@ -61,14 +63,6 @@
         "expo-camera",
         {
           "cameraPermission": "Permite escanear o QR code do servidor."
-        }
-      ],
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "Permite usar a camera para fotos e videos do evento.",
-          "enableMicrophonePermission": true,
-          "microphonePermissionText": "Permite gravar audio nos videos."
         }
       ],
       "expo-font",
