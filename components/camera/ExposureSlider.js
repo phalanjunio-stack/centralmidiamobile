@@ -10,7 +10,8 @@ const TRACK_TOP = 88;
 const TRACK_BOTTOM = 328;
 const TRACK_HEIGHT = TRACK_BOTTOM - TRACK_TOP;
 
-export default function ExposureSlider({ width = 30, height = 220, value = 0, onChange }) {
+export default function ExposureSlider({ width = 30, height = 220, value = 0, onChange, visible = true }) {
+  if (!visible) return null;
   const [v, setV] = useState(value);
   const vRef = useRef(v);
 

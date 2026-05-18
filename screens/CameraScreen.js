@@ -19,12 +19,13 @@ import CaptureButton       from '../components/camera/CaptureButton';
 import FaceFocusFrame      from '../components/camera/FaceFocusFrame';
 import VUMeter             from '../components/camera/VUMeter';
 import ExposureSlider      from '../components/camera/ExposureSlider';
+import CloudStatus         from '../components/camera/CloudStatus';
 import UploadToast         from '../components/camera/UploadToast';
 import CameraSettingsSheet from '../components/camera/CameraSettingsSheet';
 
 import {
   Zap, Settings, ChevronRight, ChevronDown,
-  Grid3x3, Sparkles, RefreshCw, CheckCircle2, Folder,
+  Grid3x3, Sparkles, RefreshCw, Folder,
 } from 'lucide-react-native';
 
 import { colors } from '../src/theme';
@@ -359,7 +360,7 @@ export default function CameraScreen({ navigation, route }) {
         isActive={true}
         zoom={Math.max(device.minZoom ?? 1, Math.min(device.maxZoom ?? 10, 1 + zoom * ((device.maxZoom ?? 10) - 1)))}
         exposure={exposure}
-        torchMode={flash === 'on' && mode === 'video' ? 'on' : 'off'}
+        torchMode={flash === 'on' ? 'on' : 'off'}
       />
 
       <View style={StyleSheet.absoluteFill} {...pinchPan.panHandlers}>
@@ -429,15 +430,16 @@ export default function CameraScreen({ navigation, route }) {
           </Text>
         </TouchableOpacity>
 
-        {/* ── CONTROLS GRID (esquerda + direita) — só 2 cards por lado ── */}
+        {/* ── CONTROLS — 2 cards por lado, absolutamente posicionados ── */}
         <View style={styles.controlsArea} pointerEvents="box-none">
-          <View style={styles.controlCol}>
+          {/* Coluna esquerda */}
+          <View style={styles.controlColLeft} pointerEvents="box-none">
             <ControlCard
               Icon={({ size, color }) => (
                 <View style={{ width: size*0.55, height: size*0.55, borderRadius: size*0.275, borderWidth: 1.6, borderColor: color }} />
               )}
-              middle={exposure >= 0 ? `+${(exposure).toFixed(1)}` : `${(exposure).toFixed(1)}`}
-              bottomLabel="EXPOSIÇÃO"
+              middle={exposure >= 0 ? `+${exposure.toFixed(1)}` : `${exposure.toFixed(1)}`}
+              bottomLabel="EXP"
               onPress={() => setShowExposure(v => !v)}
               active={showExposure}
             />
@@ -449,11 +451,23 @@ export default function CameraScreen({ navigation, route }) {
             />
           </View>
 
-          <View style={styles.controlCol}>
+          {/* Coluna direita */}
+          <View style={styles.controlColRight} pointerEvents="box-none">
             <ControlCard middle={zoomLabel} bottomLabel="ZOOM" active />
             <ControlCard Icon={Sparkles} bottomLabel="FILTROS" />
           </View>
         </View>
+
+        {/* ── EXPOSURE SLIDER — absoluto na lateral esquerda ── */}
+        {showExposure && (
+          <View style={styles.exposureSliderWrap} pointerEvents="box-none">
+            <ExposureSlider
+              visible={true}
+              value={exposure / 4}
+              onChange={(v) => setExposure(v * 4)}
+            />
+          </View>
+        )}
 
         {/* ── ZOOM PILLS ── */}
         <View style={styles.zoomPillsWrap}>
@@ -505,14 +519,9 @@ export default function CameraScreen({ navigation, route }) {
         )}
 
         {/* slider retorna -1..1, Camera v5 espera bias real (-4..+4) */}
-        <ExposureSlider
-          value={exposure / 4}
-          onChange={(v) => setExposure(v * 4)}
-          visible={showExposure}
-        />
-
-        {/* ── CAPTURE ROW ── */}
+        {/* ── CAPTURE ROW — galeria | botão centrado | nuvem ── */}
         <View style={styles.captureRow}>
+          {/* Galeria */}
           <TouchableOpacity style={styles.galleryWrap} onPress={() => navigation.navigate('Gallery')} activeOpacity={0.85}>
             <View style={styles.galleryThumb}>
               {lastThumb
@@ -523,6 +532,7 @@ export default function CameraScreen({ navigation, route }) {
             <Text style={styles.galleryLabel}>GALERIA</Text>
           </TouchableOpacity>
 
+          {/* Botão de captura — centralizado via flex */}
           <CaptureButton
             size={106}
             mode={mode}
@@ -536,16 +546,20 @@ export default function CameraScreen({ navigation, route }) {
             }}
           />
 
-          <View style={styles.statusCard}>
-            <CheckCircle2 size={22} color={colors.state.success} strokeWidth={2.2} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.statusTitle}>{queueCount + pendingCount > 0 ? 'Enviando' : 'Tudo certo'}</Text>
-              <Text style={styles.statusSub}>{queueCount + pendingCount > 0 ? 'Em fila' : 'Enviado'}</Text>
-              <Text style={styles.statusMeta}>{queueCount + pendingCount} na fila</Text>
-              <View style={styles.statusBarBg}>
-                <View style={[styles.statusBarFill, { width: queueCount + pendingCount > 0 ? '60%' : '100%' }]} />
-              </View>
-            </View>
+          {/* Nuvem de upload — mesmo width que galeria pra centralizar o botão */}
+          <View style={styles.cloudWrap}>
+            <CloudStatus
+              state={
+                queueCount + pendingCount > 0 ? 'sending' :
+                toast?.variant === 'success'  ? 'sent'    :
+                toast?.variant === 'error'    ? 'error'   : 'idle'
+              }
+              count={queueCount + pendingCount}
+              size={40}
+            />
+            <Text style={styles.cloudLabel}>
+              {queueCount + pendingCount > 0 ? `${queueCount + pendingCount} fila` : 'ENVIO'}
+            </Text>
           </View>
         </View>
 
@@ -677,12 +691,26 @@ const styles = StyleSheet.create({
   serverDot: { width: 7, height: 7, borderRadius: 4 },
   serverPillText: { color: 'rgba(255,255,255,0.85)', fontSize: 10.5, fontFamily: 'Inter_600SemiBold' },
 
-  /* CONTROLS — só 2 cards por lado, mais respiração */
+  /* CONTROLS — absolutamente posicionados nas laterais */
   controlsArea: {
-    flex: 1, flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: 18, alignItems: 'flex-start',
+    flex: 1,
   },
-  controlCol: { gap: 10, width: 56 },
+  controlColLeft: {
+    position: 'absolute', left: 0, top: 18,
+    gap: 10, width: 60,
+  },
+  controlColRight: {
+    position: 'absolute', right: 0, top: 18,
+    gap: 10, width: 60,
+  },
+  exposureSliderWrap: {
+    position: 'absolute',
+    left: 8,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    pointerEvents: 'box-none',
+  },
   controlCard: {
     backgroundColor: 'rgba(8,14,26,0.78)',
     borderWidth: 1, borderColor: 'rgba(31,139,255,0.22)',
@@ -730,28 +758,22 @@ const styles = StyleSheet.create({
   recDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF3B45' },
   recText: { color: '#FF3B45', fontSize: 12, fontFamily: 'Inter_700Bold', letterSpacing: 1 },
 
-  /* CAPTURE ROW */
+  /* CAPTURE ROW — 3 colunas iguais pra centralizar o botão */
   captureRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 4, marginBottom: 10,
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16, marginBottom: 10,
   },
-  galleryWrap: { width: 70, alignItems: 'center', gap: 4 },
+  galleryWrap: { width: 64, alignItems: 'center', gap: 4 },
   galleryThumb: {
-    width: 56, height: 56, borderRadius: 12, overflow: 'hidden',
+    width: 52, height: 52, borderRadius: 12, overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', backgroundColor: '#0a1322',
   },
-  galleryLabel: { color: '#fff', fontSize: 9.5, fontFamily: 'Inter_800ExtraBold', letterSpacing: 0.8 },
+  galleryLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 9, fontFamily: 'Inter_800ExtraBold', letterSpacing: 0.8 },
 
-  statusCard: {
-    width: 152, flexDirection: 'row', alignItems: 'flex-start', gap: 8,
-    backgroundColor: 'rgba(8,14,26,0.85)', borderColor: 'rgba(0,193,106,0.3)', borderWidth: 1,
-    borderRadius: 14, padding: 10,
-  },
-  statusTitle: { color: colors.state.success, fontSize: 12, fontFamily: 'Inter_800ExtraBold' },
-  statusSub: { color: '#fff', fontSize: 11, fontFamily: 'Inter_600SemiBold', marginTop: 1 },
-  statusMeta: { color: 'rgba(255,255,255,0.55)', fontSize: 9.5, fontFamily: 'Inter_500Medium', marginTop: 3 },
-  statusBarBg: { marginTop: 4, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
-  statusBarFill: { height: '100%', backgroundColor: colors.state.success, borderRadius: 2 },
+  /* Cloud status — mesma largura que galeria pra centralizar botão */
+  cloudWrap: { width: 64, alignItems: 'center', gap: 4 },
+  cloudLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 9, fontFamily: 'Inter_800ExtraBold', letterSpacing: 0.8 },
 
   /* PASTA ATIVA */
   pastaCard: {

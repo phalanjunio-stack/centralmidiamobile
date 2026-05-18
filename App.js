@@ -445,9 +445,14 @@ export default function App() {
           initialRouteName={initialRoute}
           screenOptions={{
             headerStyle: { backgroundColor: colors.bgElevated },
-            headerTintColor: colors.text,
-            headerTitleStyle: { fontFamily: 'Inter_700Bold', fontSize: 17 },
+            headerTintColor: '#fff',
+            headerTitleStyle: { fontFamily: 'Inter_700Bold', fontSize: 17, color: '#fff' },
+            headerBackTitleVisible: false,
+            headerShadowVisible: false,
             contentStyle: { backgroundColor: colors.bg },
+            // Animação suave em todas as telas
+            animation: 'fade_from_bottom',
+            animationDuration: 220,
           }}
         >
           <Stack.Screen
