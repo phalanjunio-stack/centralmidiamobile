@@ -86,11 +86,8 @@ export default function ConnectAuraScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={[auraColors.bg.base, '#0A1428', auraColors.bg.base]}
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFill}
-      />
+      {/* Fundo azul-escuro sólido (sem gradiente clareando no meio) */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#040B17' }]} />
 
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
@@ -317,7 +314,7 @@ function ManualConnectModal({ visible, onClose, onConnected }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: auraColors.bg.base },
+  container: { flex: 1, backgroundColor: '#040B17' },
   scroll: {
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing['4xl'],
