@@ -1,69 +1,28 @@
-// Ícone de status de upload da câmera
-// Estados: idle | sending | sent | error
-// Anima suavemente entre os estados
+// Ícone de status de upload da câmera — usa PNGs oficiais da marca.
+// Estados: idle | sending | sent | error | pending
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, Easing, StyleSheet } from 'react-native';
-import Svg, { Path, Circle, Defs, Filter, FeDropShadow } from 'react-native-svg';
+import { View, Animated, Easing, StyleSheet, Image, Text } from 'react-native';
+import { IC } from '../../src/theme/icons';
 
-const SIZE = 44;
+const STATE_ICON = {
+  idle:    IC.nuvem,
+  sending: IC.enviando,
+  sent:    IC.enviado,
+  error:   IC.erro,
+  pending: IC.aguardando,
+};
 
-// Nuvem SVG simples (viewBox 0 0 24 24)
-function CloudShape({ color = '#fff', opacity = 1 }) {
-  return (
-    <Path
-      d="M4 14.5A4.5 4.5 0 0 1 8.5 10H9a5 5 0 0 1 9.9-1H19a3 3 0 0 1 0 6H8.5A4.5 4.5 0 0 1 4 14.5z"
-      fill={color}
-      opacity={opacity}
-    />
-  );
-}
+const STATE_GLOW = {
+  idle:    'transparent',
+  sending: '#1F8BFF',
+  sent:    '#00C16A',
+  error:   '#FF4B52',
+  pending: '#FFB341',
+};
 
-// Seta pra cima (enviando)
-function ArrowUp({ color = '#fff' }) {
-  return (
-    <Path
-      d="M12 17v-6M9 14l3-3 3 3"
-      stroke={color}
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-  );
-}
-
-// Check (enviado)
-function Check({ color = '#00C16A' }) {
-  return (
-    <Path
-      d="M9 12l2 2 4-4"
-      stroke={color}
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-  );
-}
-
-// X (erro)
-function XMark({ color = '#FF4B52' }) {
-  return (
-    <Path
-      d="M10 10l4 4M14 10l-4 4"
-      stroke={color}
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-  );
-}
-
-export default function CloudStatus({ state = 'idle', count = 0, size = SIZE }) {
-  // states: 'idle' | 'sending' | 'sent' | 'error'
-  const sendingAnim = useRef(new Animated.Value(0)).current;
+export default function CloudStatus({ state = 'idle', count = 0, size = 44 }) {
   const pulseAnim   = useRef(new Animated.Value(1)).current;
+  const sendingAnim = useRef(new Animated.Value(0)).current;
   const loopRef     = useRef(null);
 
   useEffect(() => {
@@ -73,31 +32,27 @@ export default function CloudStatus({ state = 'idle', count = 0, size = SIZE }) 
     }
 
     if (state === 'sending') {
-      // Seta sobe e repete
+      // Pulse suave + leve "respiração"
       loopRef.current = Animated.loop(
         Animated.sequence([
-          Animated.timing(sendingAnim, {
-            toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true,
-          }),
-          Animated.timing(sendingAnim, {
-            toValue: 0, duration: 0, useNativeDriver: true,
-          }),
+          Animated.timing(pulseAnim, { toValue: 1.10, duration: 600, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.00, duration: 600, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         ])
       );
       loopRef.current.start();
-    } else {
-      sendingAnim.setValue(0);
-    }
-
-    if (state === 'sent') {
-      // Pulso suave no check
-      loopRef.current = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.15, duration: 600, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1.0,  duration: 600, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        ])
-      );
-      loopRef.current.start();
+    } else if (state === 'sent') {
+      // Pulse curto de sucesso, depois para
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.18, duration: 280, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.00, duration: 320, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]).start();
+    } else if (state === 'error') {
+      // Shake leve
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.92, duration: 100, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.05, duration: 100, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.00, duration: 150, useNativeDriver: true }),
+      ]).start();
     } else {
       pulseAnim.setValue(1);
     }
@@ -107,67 +62,45 @@ export default function CloudStatus({ state = 'idle', count = 0, size = SIZE }) 
     };
   }, [state]);
 
-  const arrowY = sendingAnim.interpolate({
-    inputRange: [0, 1], outputRange: [0, -5],
-  });
-  const arrowOpacity = sendingAnim.interpolate({
-    inputRange: [0, 0.3, 0.8, 1], outputRange: [0.4, 1, 0.7, 0.4],
-  });
-
-  const cloudColor =
-    state === 'sent'    ? '#00C16A' :
-    state === 'error'   ? '#FF4B52' :
-    state === 'sending' ? '#1F8BFF' :
-    'rgba(255,255,255,0.55)';
-
-  const glowColor =
-    state === 'sent'    ? '#00C16A' :
-    state === 'error'   ? '#FF4B52' :
-    state === 'sending' ? '#1F8BFF' :
-    'transparent';
-
-  const scale = size / SIZE;
+  const glowColor = STATE_GLOW[state] || 'transparent';
+  const icon      = STATE_ICON[state] || IC.nuvem;
+  const hasGlow   = state !== 'idle';
 
   return (
     <View style={[styles.wrap, { width: size, height: size }]}>
+      {/* Glow behind icon */}
+      {hasGlow && (
+        <View
+          style={[
+            styles.glow,
+            {
+              width: size + 18,
+              height: size + 18,
+              borderRadius: (size + 18) / 2,
+              backgroundColor: glowColor,
+              opacity: 0.18,
+              position: 'absolute',
+            },
+          ]}
+        />
+      )}
+
       <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-        <Svg width={size} height={size} viewBox="0 0 24 24">
-          <Defs>
-            <Filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-              <FeDropShadow dx={0} dy={0} stdDeviation={2} floodColor={glowColor} floodOpacity={0.9} />
-            </Filter>
-          </Defs>
-
-          {/* Nuvem */}
-          <CloudShape color={cloudColor} />
-
-          {/* Estado: enviando — seta animada */}
-          {state === 'sending' && (
-            <Animated.View
-              style={{
-                position: 'absolute', top: 0, left: 0, width: size, height: size,
-                transform: [{ translateY: arrowY }],
-                opacity: arrowOpacity,
-              }}
-            >
-              <Svg width={size} height={size} viewBox="0 0 24 24">
-                <ArrowUp color="#fff" />
-              </Svg>
-            </Animated.View>
-          )}
-
-          {/* Estado: enviado — check */}
-          {state === 'sent' && <Check color="#fff" />}
-
-          {/* Estado: erro — X */}
-          {state === 'error' && <XMark color="#fff" />}
-        </Svg>
+        <Image
+          source={icon}
+          style={{
+            width: size,
+            height: size,
+            resizeMode: 'contain',
+            opacity: state === 'idle' ? 0.55 : 1,
+          }}
+        />
       </Animated.View>
 
-      {/* Contador de fila (só se sending e count > 0) */}
+      {/* Contador de fila (badge no canto) */}
       {state === 'sending' && count > 0 && (
         <View style={styles.badge}>
-          <Animated.Text style={styles.badgeText}>{count > 9 ? '9+' : count}</Animated.Text>
+          <Text style={styles.badgeText}>{count > 9 ? '9+' : count}</Text>
         </View>
       )}
     </View>
@@ -179,20 +112,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  glow: {
+    shadowColor: '#1F8BFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   badge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#FF4B52',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#1F8BFF',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#06090F',
   },
   badgeText: {
     color: '#fff',
-    fontSize: 8,
+    fontSize: 9,
     fontFamily: 'Inter_800ExtraBold',
   },
 });

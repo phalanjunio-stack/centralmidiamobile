@@ -36,18 +36,15 @@ import { runBootSequence } from './src/boot/bootSequence';
 import { colors } from './theme';
 
 import { Image as RNImage } from 'react-native';
-import { Camera } from 'lucide-react-native';
 
+// Tab icons usam os PNGs novos da iconografia oficial.
+// Ativo: tintColor azul vivo. Inativo: cinza.
 const TAB_ICONS = {
-  homeAtivo:      require('./assets/icons/rodape_inicio_ativo.png'),
-  homeInativo:    require('./assets/icons/rodape_inicio_inativo.png'),
-  projetosAtivo:  require('./assets/icons/rodape_projetos_ativo.png'),
-  projetosInativo:require('./assets/icons/rodape_projetos.png'),
-  camera:         require('./assets/icons/rodape_camera_central.png'),
-  galeriaAtivo:   require('./assets/icons/rodape_galeria_ativo.png'),
-  galeriaInativo: require('./assets/icons/rodape_galeria.png'),
-  uploadAtivo:    require('./assets/icons/rodape_upload_ativo.png'),
-  uploadInativo:  require('./assets/icons/rodape_upload.png'),
+  home:     require('./assets/icons/nav_inicio.png'),
+  projetos: require('./assets/icons/nav_projetos.png'),
+  camera:   require('./assets/icons/nav_camera.png'),
+  galeria:  require('./assets/icons/nav_galeria.png'),
+  upload:   require('./assets/icons/nav_upload.png'),
 };
 import { UploadProvider, useUploads } from './src/context/UploadContext';
 
@@ -275,7 +272,7 @@ function CenterTabButton({ onPress, onLongPress }) {
           <Circle cx={50} cy={50} r={48} fill="url(#cshine)" />
           <Circle cx={50} cy={50} r={45} fill="none" stroke="rgba(90,174,255,0.25)" strokeWidth={0.8} />
         </Svg>
-        <Camera size={28} color="#5AAEFF" strokeWidth={2} />
+        <RNImage source={TAB_ICONS.camera} style={{ width: 30, height: 30, tintColor: '#5AAEFF', resizeMode: 'contain' }} />
       </TouchableOpacity>
     </View>
   );
@@ -294,7 +291,10 @@ function UploadTabIcon({ focused }) {
   const { pendingCount } = useUploads();
   return (
     <View style={styles.tabIconWrap}>
-      <RNImage source={focused ? TAB_ICONS.uploadAtivo : TAB_ICONS.uploadInativo} style={styles.tabIcon} />
+      <RNImage
+        source={TAB_ICONS.upload}
+        style={[styles.tabIcon, { tintColor: focused ? '#1F8BFF' : '#5A7090' }]}
+      />
       {pendingCount > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{pendingCount > 99 ? '99+' : pendingCount}</Text>
@@ -330,7 +330,7 @@ function MainTabs({ navigation }) {
           tabBarLabel: 'Início',
           tabBarIcon: ({ focused }) => (
             <TabIcon>
-              <RNImage source={focused ? TAB_ICONS.homeAtivo : TAB_ICONS.homeInativo} style={styles.tabIcon} />
+              <RNImage source={TAB_ICONS.home} style={[styles.tabIcon, { tintColor: focused ? '#1F8BFF' : '#5A7090' }]} />
             </TabIcon>
           ),
         }}
@@ -342,7 +342,7 @@ function MainTabs({ navigation }) {
           tabBarLabel: 'Projetos',
           tabBarIcon: ({ focused }) => (
             <TabIcon>
-              <RNImage source={focused ? TAB_ICONS.projetosAtivo : TAB_ICONS.projetosInativo} style={styles.tabIcon} />
+              <RNImage source={TAB_ICONS.projetos} style={[styles.tabIcon, { tintColor: focused ? '#1F8BFF' : '#5A7090' }]} />
             </TabIcon>
           ),
         }}
@@ -367,7 +367,7 @@ function MainTabs({ navigation }) {
           tabBarLabel: 'Galeria',
           tabBarIcon: ({ focused }) => (
             <TabIcon>
-              <RNImage source={focused ? TAB_ICONS.galeriaAtivo : TAB_ICONS.galeriaInativo} style={styles.tabIcon} />
+              <RNImage source={TAB_ICONS.galeria} style={[styles.tabIcon, { tintColor: focused ? '#1F8BFF' : '#5A7090' }]} />
             </TabIcon>
           ),
         }}

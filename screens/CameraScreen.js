@@ -23,10 +23,8 @@ import CloudStatus         from '../components/camera/CloudStatus';
 import UploadToast         from '../components/camera/UploadToast';
 import CameraSettingsSheet from '../components/camera/CameraSettingsSheet';
 
-import {
-  Zap, Settings, ChevronRight, ChevronDown,
-  Grid3x3, Sparkles, RefreshCw, Folder,
-} from 'lucide-react-native';
+import { ChevronDown, ChevronRight } from 'lucide-react-native';
+import { IC } from '../src/theme/icons';
 
 import { colors } from '../src/theme';
 import { useUploads } from '../src/context/UploadContext';
@@ -408,16 +406,19 @@ export default function CameraScreen({ navigation, route }) {
             </View>
           </TouchableOpacity>
 
-          {/* 3 ícones de ação */}
+          {/* 3 ícones de ação — usando PNGs da marca */}
           <View style={styles.topActions}>
             <CircleBtn onPress={handleFlashToggle} active={flash !== 'off'}>
-              <Zap size={17} color={flash !== 'off' ? '#FFB341' : '#fff'} fill={flash !== 'off' ? '#FFB341' : 'none'} strokeWidth={2.2} />
+              <Image
+                source={flash !== 'off' ? IC.flashLigado : IC.flashDesativado}
+                style={{ width: 18, height: 18, tintColor: flash !== 'off' ? '#FFB341' : '#fff', resizeMode: 'contain' }}
+              />
             </CircleBtn>
             <CircleBtn onPress={handleFlipToggle}>
-              <RefreshCw size={16} color="#fff" strokeWidth={2.2} />
+              <Image source={IC.virarCamera} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
             </CircleBtn>
             <CircleBtn onPress={() => setSettingsOpen(true)}>
-              <Settings size={17} color="#fff" strokeWidth={2} />
+              <Image source={IC.engrenagemCamera} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
             </CircleBtn>
           </View>
         </View>
@@ -435,16 +436,14 @@ export default function CameraScreen({ navigation, route }) {
           {/* Coluna esquerda */}
           <View style={styles.controlColLeft} pointerEvents="box-none">
             <ControlCard
-              Icon={({ size, color }) => (
-                <View style={{ width: size*0.55, height: size*0.55, borderRadius: size*0.275, borderWidth: 1.6, borderColor: color }} />
-              )}
+              iconSrc={IC.exposicao}
               middle={exposure >= 0 ? `+${exposure.toFixed(1)}` : `${exposure.toFixed(1)}`}
               bottomLabel="EXP"
               onPress={() => setShowExposure(v => !v)}
               active={showExposure}
             />
             <ControlCard
-              Icon={Grid3x3}
+              iconSrc={IC.grade}
               bottomLabel="GRADE"
               onPress={() => toggleSetting(KEYS.GRID, gridEnabled, setGridEnabled)}
               active={gridEnabled}
@@ -454,7 +453,7 @@ export default function CameraScreen({ navigation, route }) {
           {/* Coluna direita */}
           <View style={styles.controlColRight} pointerEvents="box-none">
             <ControlCard middle={zoomLabel} bottomLabel="ZOOM" active />
-            <ControlCard Icon={Sparkles} bottomLabel="FILTROS" />
+            <ControlCard iconSrc={IC.filtro} bottomLabel="FILTROS" />
           </View>
         </View>
 
@@ -566,7 +565,7 @@ export default function CameraScreen({ navigation, route }) {
         {/* ── PASTA ATIVA ── */}
         <TouchableOpacity style={styles.pastaCard} onPress={() => navigation.navigate('Gallery')} activeOpacity={0.85}>
           <View style={styles.pastaIcon}>
-            <Folder size={20} color={colors.aura.primaryBright} strokeWidth={2} />
+            <Image source={IC.galeria} style={{ width: 22, height: 22, tintColor: colors.aura.primaryBright, resizeMode: 'contain' }} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.pastaTitle}>Pasta ativa</Text>
@@ -612,15 +611,19 @@ function CircleBtn({ children, onPress, active }) {
   );
 }
 
-function ControlCard({ middle, bottomLabel, Icon, onPress, active }) {
+function ControlCard({ middle, bottomLabel, Icon, iconSrc, onPress, active }) {
   const Component = onPress ? TouchableOpacity : View;
+  const tint = active ? colors.aura.primaryBright : '#B8C3D1';
   return (
     <Component
       style={[styles.controlCard, active && styles.controlCardActive]}
       onPress={onPress}
       activeOpacity={0.85}
     >
-      {Icon && <Icon size={18} color={active ? colors.aura.primaryBright : '#B8C3D1'} strokeWidth={1.8} />}
+      {iconSrc && (
+        <Image source={iconSrc} style={{ width: 20, height: 20, tintColor: tint, resizeMode: 'contain' }} />
+      )}
+      {!iconSrc && Icon && <Icon size={18} color={tint} strokeWidth={1.8} />}
       {middle && <Text style={[styles.controlMiddle, active && { color: colors.aura.primaryBright }]}>{middle}</Text>}
       {bottomLabel && <Text style={styles.controlBottom}>{bottomLabel}</Text>}
     </Component>

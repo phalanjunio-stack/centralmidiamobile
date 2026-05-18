@@ -5,9 +5,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { MapPin, Calendar } from 'lucide-react-native';
-
 import { colors } from '../theme';
+import { IC } from '../src/theme/icons';
 import { listEvents } from '../services/api';
 import { getServerConfig, getActiveEvent, setActiveEvent } from '../services/storage';
 
@@ -89,13 +88,14 @@ export default function EventsScreen({ navigation }) {
         <TouchableOpacity
           style={styles.scanBtn}
           onPress={() => navigation.navigate('QRScanner', { mode: 'event' })}
+          activeOpacity={0.85}
         >
-          <Text style={styles.scanBtnIcon}>⬛</Text>
+          <Image source={IC.qrCode} style={{ width: 22, height: 22, tintColor: colors.brand, resizeMode: 'contain' }} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.searchWrap}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Image source={IC.buscar} style={styles.searchIconImg} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar atividade"
@@ -170,7 +170,7 @@ function EventRow({ event, serverUrl, isActive, onPress, onActivate }) {
         <Text style={styles.rowDate}>{formatRange(event.startDate, event.endDate)}</Text>
         {event.location && (
           <View style={styles.locRow}>
-            <MapPin size={11} color={colors.muted} strokeWidth={1.8} />
+            <Image source={IC.localizacao} style={{ width: 11, height: 11, tintColor: colors.muted, resizeMode: 'contain' }} />
             <Text style={styles.rowLoc} numberOfLines={1}>{event.location}</Text>
           </View>
         )}
@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.border,
   },
   searchIcon: { fontSize: 14 },
+  searchIconImg: { width: 16, height: 16, tintColor: colors.muted, resizeMode: 'contain' },
   searchInput: {
     flex: 1, color: colors.text, padding: 12, fontSize: 14,
     fontFamily: 'Inter_500Medium',
