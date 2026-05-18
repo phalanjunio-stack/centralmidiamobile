@@ -6,9 +6,8 @@ import {
   Image, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Check, UserPlus, ArrowLeft } from 'lucide-react-native';
-
 import { colors } from '../theme';
+import { IC } from '../src/theme/icons';
 import { claimDeviceProfile } from '../services/api';
 import {
   getDeviceId, getServerConfig,
@@ -90,7 +89,7 @@ export default function ProfilePickerScreen({ navigation, route }) {
               style={styles.backBtn}
               onPress={() => navigation.goBack()}
             >
-              <ArrowLeft size={20} color="#94a3b8" strokeWidth={1.8} />
+              <Image source={IC.chevronDir} style={{ width: 18, height: 18, tintColor: '#94a3b8', transform: [{ rotate: '180deg' }] }} />
             </TouchableOpacity>
             <View style={{ flex: 1 }} />
           </View>
@@ -101,7 +100,7 @@ export default function ProfilePickerScreen({ navigation, route }) {
           >
             <View style={styles.intro}>
               <View style={styles.successBadge}>
-                <Check size={22} color="#10b981" strokeWidth={2.5} />
+                <Image source={IC.check} style={{ width: 22, height: 22, tintColor: '#10b981' }} />
               </View>
               <Text style={styles.title}>Celular conectado!</Text>
               <Text style={styles.subtitle}>Agora escolha quem é o videomaker desse celular.</Text>
@@ -137,7 +136,7 @@ export default function ProfilePickerScreen({ navigation, route }) {
                       </View>
                       {active && (
                         <View style={styles.checkRound}>
-                          <Check size={16} color="#fff" strokeWidth={3} />
+                          <Image source={IC.check} style={{ width: 14, height: 14, tintColor: '#fff' }} />
                         </View>
                       )}
                     </TouchableOpacity>
@@ -151,7 +150,7 @@ export default function ProfilePickerScreen({ navigation, route }) {
                   activeOpacity={0.85}
                 >
                   <View style={styles.avatarPlus}>
-                    <UserPlus size={20} color="#3b82f6" strokeWidth={1.8} />
+                    <Image source={IC.adicionar} style={{ width: 20, height: 20, tintColor: '#3b82f6' }} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.cardNewTitle}>Sou novo aqui</Text>

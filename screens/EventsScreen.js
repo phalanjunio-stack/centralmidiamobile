@@ -18,6 +18,7 @@ export default function EventsScreen({ navigation }) {
   const [error, setError]         = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery]         = useState('');
+  const [tab, setTab]             = useState('all'); // 'all' | 'active' | 'closed'
 
   async function load() {
     setError('');
@@ -75,23 +76,65 @@ export default function EventsScreen({ navigation }) {
     else                             grouped.past.push(e);
   });
 
-  const sections = [
-    { title: 'ATIVOS AGORA', data: grouped.active,   color: colors.active },
-    { title: 'PRÓXIMOS',     data: grouped.upcoming, color: colors.warning },
-    { title: 'ENCERRADOS',   data: grouped.past,     color: colors.muted },
-  ].filter((s) => s.data.length > 0);
+  const allSections = [
+    { id: 'active',   title: 'ATIVOS AGORA', data: grouped.active,   color: colors.active },
+    { id: 'upcoming', title: 'PRÓXIMOS',     data: grouped.upcoming, color: colors.warning },
+    { id: 'past',     title: 'ENCERRADOS',   data: grouped.past,     color: colors.muted },
+  ];
+
+  // Filtra seções pelo tab
+  const sections = (
+    tab === 'all'    ? allSections :
+    tab === 'active' ? allSections.filter((s) => s.id === 'active' || s.id === 'upcoming') :
+    tab === 'closed' ? allSections.filter((s) => s.id === 'past') :
+    allSections
+  ).filter((s) => s.data.length > 0);
+
+  const tabCounts = {
+    all:    grouped.active.length + grouped.upcoming.length + grouped.past.length,
+    active: grouped.active.length + grouped.upcoming.length,
+    closed: grouped.past.length,
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Agenda</Text>
-        <TouchableOpacity
-          style={styles.scanBtn}
-          onPress={() => navigation.navigate('QRScanner', { mode: 'event' })}
-          activeOpacity={0.85}
-        >
-          <Image source={IC.qrCode} style={{ width: 22, height: 22, tintColor: colors.brand, resizeMode: 'contain' }} />
-        </TouchableOpacity>
+        <Text style={styles.title}>Projetos</Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.scanBtn}
+            onPress={() => navigation.navigate('QRScanner', { mode: 'event' })}
+            activeOpacity={0.85}
+          >
+            <Image source={IC.qrCode} style={{ width: 20, height: 20, tintColor: colors.brand, resizeMode: 'contain' }} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => navigation.navigate('CreateProject')}
+            activeOpacity={0.85}
+          >
+            <Image source={IC.adicionar} style={{ width: 22, height: 22, tintColor: '#fff', resizeMode: 'contain' }} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Filter tabs */}
+      <View style={styles.tabsRow}>
+        {[
+          { id: 'all',    label: 'Todos' },
+          { id: 'active', label: 'Ativos' },
+          { id: 'closed', label: 'Concluídos' },
+        ].map((t) => (
+          <TouchableOpacity
+            key={t.id}
+            style={[styles.tabChip, tab === t.id && styles.tabChipActive]}
+            onPress={() => setTab(t.id)}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.tabText, tab === t.id && styles.tabTextActive]}>{t.label}</Text>
+            <Text style={[styles.tabCount, tab === t.id && styles.tabCountActive]}>{tabCounts[t.id]}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <View style={styles.searchWrap}>
@@ -205,13 +248,46 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: { color: colors.text, fontSize: 24, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.5 },
+  headerActions: { flexDirection: 'row', gap: 8 },
   scanBtn: {
     width: 40, height: 40, borderRadius: 12,
-    backgroundColor: colors.brandFaded,
+    backgroundColor: 'rgba(31,139,255,0.10)',
     borderWidth: 1, borderColor: colors.brand,
     alignItems: 'center', justifyContent: 'center',
   },
   scanBtnIcon: { fontSize: 18 },
+  addBtn: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: colors.brand,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: colors.brand, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6,
+  },
+
+  /* TABS */
+  tabsRow: {
+    flexDirection: 'row', gap: 8,
+    paddingHorizontal: 16, paddingTop: 6, paddingBottom: 12,
+  },
+  tabChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 14, paddingVertical: 9,
+    backgroundColor: 'rgba(15,23,42,0.7)',
+    borderWidth: 1, borderColor: colors.border,
+    borderRadius: 11,
+  },
+  tabChipActive: {
+    backgroundColor: colors.brand,
+    borderColor: colors.brand,
+  },
+  tabText: { color: colors.textMid, fontSize: 13, fontFamily: 'Inter_700Bold' },
+  tabTextActive: { color: '#fff' },
+  tabCount: {
+    color: colors.muted, fontSize: 11, fontFamily: 'Inter_800ExtraBold',
+    minWidth: 18, height: 20, borderRadius: 10,
+    paddingHorizontal: 6, textAlign: 'center', lineHeight: 20,
+    backgroundColor: 'rgba(148,163,184,0.20)',
+  },
+  tabCountActive: { color: '#fff', backgroundColor: 'rgba(255,255,255,0.30)' },
 
   searchWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -238,32 +314,35 @@ const styles = StyleSheet.create({
   sectionCount: { color: colors.faint, fontSize: 12, fontFamily: 'Inter_600SemiBold' },
 
   row: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: colors.card, marginHorizontal: 16, marginBottom: 8,
-    padding: 10, borderRadius: 12,
-    borderWidth: 1, borderColor: colors.border,
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    marginHorizontal: 16, marginBottom: 10,
+    padding: 12, borderRadius: 16,
+    borderWidth: 1, borderColor: 'rgba(31,139,255,0.18)',
   },
   thumb: {
-    width: 60, height: 60, borderRadius: 8, overflow: 'hidden',
-    backgroundColor: colors.cardElev,
+    width: 76, height: 76, borderRadius: 12, overflow: 'hidden',
+    backgroundColor: colors.cardElev || '#0a1322',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  rowName: { color: colors.text, fontSize: 14, fontFamily: 'Inter_700Bold' },
-  rowDate: { color: colors.muted, fontSize: 11, marginTop: 2, fontFamily: 'Inter_500Medium' },
-  locRow:  { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
-  rowLoc:  { color: colors.faint, fontSize: 11, fontFamily: 'Inter_400Regular' },
+  rowName: { color: colors.text, fontSize: 15.5, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.3 },
+  rowDate: { color: colors.muted, fontSize: 12, marginTop: 3, fontFamily: 'Inter_500Medium' },
+  locRow:  { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+  rowLoc:  { color: colors.faint, fontSize: 11.5, fontFamily: 'Inter_400Regular' },
 
   checkBadge: {
-    width: 32, height: 32, borderRadius: 16,
+    width: 38, height: 38, borderRadius: 19,
     backgroundColor: colors.active,
     alignItems: 'center', justifyContent: 'center',
+    shadowColor: colors.active, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 4,
   },
-  checkBadgeText: { color: '#fff', fontSize: 15, fontFamily: 'Inter_700Bold' },
+  checkBadgeText: { color: '#fff', fontSize: 17, fontFamily: 'Inter_800ExtraBold' },
   useBtn: {
-    paddingHorizontal: 12, paddingVertical: 8,
-    backgroundColor: colors.brandFaded, borderRadius: 8,
+    paddingHorizontal: 16, paddingVertical: 10,
+    backgroundColor: 'rgba(31,139,255,0.10)', borderRadius: 10,
     borderWidth: 1, borderColor: colors.brand,
   },
-  useBtnText: { color: colors.brand, fontSize: 12, fontFamily: 'Inter_700Bold' },
+  useBtnText: { color: colors.brand, fontSize: 13, fontFamily: 'Inter_700Bold' },
 
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 8 },

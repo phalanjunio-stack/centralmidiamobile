@@ -6,7 +6,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronDown } from 'lucide-react-native';
 import Svg, { Defs, RadialGradient as SvgRadialGradient, Stop, Circle as SvgCircle } from 'react-native-svg';
 
 // Ícones oficiais Contourline
@@ -121,7 +120,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.serverPillText} numberOfLines={1}>
               {connected ? 'Servidor conectado' : 'Sem servidor'}
             </Text>
-            <ChevronDown size={13} color={colors.text.secondary} strokeWidth={2.5} />
+            <Image source={IC.chevronBaixo} style={{ width: 12, height: 12, tintColor: colors.text.secondary, resizeMode: 'contain' }} />
           </TouchableOpacity>
 
           {/* Direita: sino + avatar */}

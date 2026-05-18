@@ -7,9 +7,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { QrCode, Calendar, MapPin, Check, RefreshCw, ChevronRight } from 'lucide-react-native';
-
 import { colors } from '../theme';
+import { IC } from '../src/theme/icons';
 import { listEvents } from '../services/api';
 import {
   getServerConfig, getActiveEvent, setActiveEvent,
@@ -84,8 +83,8 @@ export default function EventPickerScreen({ navigation }) {
             <Text style={styles.title}>Qual atividade?</Text>
             <Text style={styles.subtitle}>Eventos, treinamentos e visitas</Text>
           </View>
-          <TouchableOpacity onPress={load} style={styles.refreshBtn}>
-            <RefreshCw size={18} color="#94a3b8" strokeWidth={1.8} />
+          <TouchableOpacity onPress={load} style={styles.refreshBtn} activeOpacity={0.8}>
+            <Image source={IC.sincronizando} style={{ width: 18, height: 18, tintColor: '#94a3b8' }} />
           </TouchableOpacity>
         </View>
 
@@ -96,13 +95,13 @@ export default function EventPickerScreen({ navigation }) {
           {/* QR Card destaque */}
           <TouchableOpacity style={styles.qrCard} onPress={handleQRScan} activeOpacity={0.85}>
             <View style={styles.qrIconBox}>
-              <QrCode size={28} color="#fff" strokeWidth={1.8} />
+              <Image source={IC.qrCode} style={{ width: 28, height: 28, tintColor: '#fff' }} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.qrTitle}>Escanear QR da atividade</Text>
               <Text style={styles.qrSub}>Configura tudo de uma vez no local</Text>
             </View>
-            <ChevronRight size={24} color="rgba(255,255,255,0.5)" strokeWidth={2} />
+            <Image source={IC.chevronDir} style={{ width: 18, height: 18, tintColor: 'rgba(255,255,255,0.5)' }} />
           </TouchableOpacity>
 
           {loading ? (
@@ -197,19 +196,19 @@ function EventRow({ event, serverUrl, isActive, onPress }) {
       <View style={{ flex: 1 }}>
         <Text style={styles.rowName} numberOfLines={1}>{event.name}</Text>
         <View style={styles.metaRow}>
-          <Calendar size={11} color="#94a3b8" strokeWidth={1.8} />
+          <Image source={IC.calendario} style={{ width: 11, height: 11, tintColor: '#94a3b8' }} />
           <Text style={styles.rowMeta}>{range}</Text>
         </View>
         {event.location && (
           <View style={styles.metaRow}>
-            <MapPin size={11} color="#94a3b8" strokeWidth={1.8} />
+            <Image source={IC.localizacao} style={{ width: 11, height: 11, tintColor: '#94a3b8' }} />
             <Text style={styles.rowMeta} numberOfLines={1}>{event.location}</Text>
           </View>
         )}
       </View>
       {isActive
-        ? <View style={styles.checkRound}><Check size={16} color="#fff" strokeWidth={3} /></View>
-        : <ChevronRight size={20} color="#94a3b8" strokeWidth={2} />
+        ? <View style={styles.checkRound}><Image source={IC.check} style={{ width: 14, height: 14, tintColor: '#fff' }} /></View>
+        : <Image source={IC.chevronDir} style={{ width: 14, height: 14, tintColor: '#94a3b8' }} />
       }
     </TouchableOpacity>
   );

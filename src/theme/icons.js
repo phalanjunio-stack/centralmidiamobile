@@ -125,6 +125,17 @@ export const IC = {
   qrCode:         require('../../assets/icons/qr_code.png'),
   lerQrEvento:    require('../../assets/icons/ler_qr_evento.png'),
   configuracoes:  require('../../assets/icons/engrenagem_configuracoes.png'),
+
+  // ── Chevrons (legados, antes do iconset novo) ──
+  chevronDir:   require('../../assets/icons/chevron_direita.png'),
+  chevronBaixo: require('../../assets/icons/chevron_baixo.png'),
+
+  // ── Ações Quick (legados do HomeScreen) ──
+  acaoCamera:     require('../../assets/icons/acao_camera.png'),
+  acaoGaleria:    require('../../assets/icons/acao_galeria.png'),
+  acaoQR:         require('../../assets/icons/acao_qr_evento.png'),
+  acaoProjeto:    require('../../assets/icons/acao_novo_projeto.png'),
+  acaoSeta:       require('../../assets/icons/acao_seta.png'),
 };
 
 export default IC;

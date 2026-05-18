@@ -6,6 +6,8 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme';
+import { IC } from '../src/theme/icons';
+import { Image } from 'react-native';
 
 import {
   saveServerConfig, setActiveEvent, getServerConfig,
@@ -229,10 +231,10 @@ export default function QRScannerScreen({ navigation, route }) {
         </View>
       </View>
 
-      {/* botão fechar */}
+      {/* botão fechar — agora com ícone da marca */}
       <SafeAreaView style={styles.closeWrap}>
-        <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.closeBtnText}>✕</Text>
+        <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <Image source={IC.fechar} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
         </TouchableOpacity>
       </SafeAreaView>
     </View>

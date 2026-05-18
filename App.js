@@ -26,6 +26,7 @@ import ProfilePickerScreen from './screens/ProfilePickerScreen';
 import EventPickerScreen   from './screens/EventPickerScreen';
 import CameraScreen        from './screens/CameraScreen';
 import ConnectAuraScreen   from './screens/ConnectAuraScreen';
+import CreateProjectScreen from './screens/CreateProjectScreen';
 
 import * as ExpoSplash from 'expo-splash-screen';
 
@@ -509,6 +510,11 @@ export default function App() {
             name="Camera"
             component={CameraScreen}
             options={{ headerShown: false, animation: 'fade' }}
+          />
+          <Stack.Screen
+            name="CreateProject"
+            component={CreateProjectScreen}
+            options={{ headerShown: false, presentation: 'modal', animation: 'slide_from_bottom' }}
           />
         </Stack.Navigator>
       </NavigationContainer>

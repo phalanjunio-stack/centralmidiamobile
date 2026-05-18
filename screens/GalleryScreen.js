@@ -5,13 +5,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  Image as ImageIcon, Video, FileText, Filter, Search, ChevronDown,
-  LayoutGrid, List as ListIcon, Bell, User, X, Share2, FolderOpen,
-  CheckCircle2, AlertCircle, RotateCw, Star, Clock3, UploadCloud, RefreshCw,
-} from 'lucide-react-native';
-
 import { colors } from '../theme';
+import { IC } from '../src/theme/icons';
 import LogoIcon from '../components/icons/LogoIcon';
 import {
   getDeviceProfile, getActiveEvent, getSyncLog, getSyncStats,
@@ -92,13 +87,13 @@ export default function GalleryScreen() {
             </View>
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.iconButton}>
-                <Bell size={18} color="#fff" strokeWidth={1.8} />
+                <Image source={IC.notificacao} style={{ width: 18, height: 18, tintColor: '#fff' }} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.avatar}>
                 {profile?.photoUri ? (
                   <Image source={{ uri: profile.photoUri }} style={styles.avatarImg} />
                 ) : (
-                  <User size={19} color={colors.textMid} strokeWidth={1.8} />
+                  <Image source={IC.perfil} style={{ width: 20, height: 20, tintColor: colors.textMid }} />
                 )}
                 <View style={styles.onlineDot} />
               </TouchableOpacity>
@@ -106,18 +101,18 @@ export default function GalleryScreen() {
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-            <Chip label="Todas" active={filter === 'all'} onPress={() => setFilter('all')} />
-            <Chip label="Fotos" active={filter === 'photo'} onPress={() => setFilter('photo')} Icon={ImageIcon} />
-            <Chip label="Vídeos" active={filter === 'video'} onPress={() => setFilter('video')} Icon={Video} />
-            <Chip label="Documentos" active={false} onPress={() => {}} Icon={FileText} />
+            <Chip label="Todas"      active={filter === 'all'}   onPress={() => setFilter('all')} />
+            <Chip label="Fotos"      active={filter === 'photo'} onPress={() => setFilter('photo')} iconSrc={IC.foto} />
+            <Chip label="Vídeos"     active={filter === 'video'} onPress={() => setFilter('video')} iconSrc={IC.video} />
+            <Chip label="Documentos" active={false}              onPress={() => {}} iconSrc={IC.relatorio} />
             <TouchableOpacity style={styles.filterOnly}>
-              <Filter size={18} color={colors.textMid} strokeWidth={1.8} />
+              <Image source={IC.filtro} style={{ width: 18, height: 18, tintColor: colors.textMid }} />
             </TouchableOpacity>
           </ScrollView>
 
           <View style={styles.searchRow}>
             <View style={styles.searchBox}>
-              <Search size={17} color={colors.muted} strokeWidth={1.8} />
+              <Image source={IC.buscar} style={{ width: 16, height: 16, tintColor: colors.muted }} />
               <TextInput
                 value={search}
                 onChangeText={setSearch}
@@ -128,21 +123,21 @@ export default function GalleryScreen() {
             </View>
             <TouchableOpacity style={styles.sortButton}>
               <Text style={styles.sortText}>Mais recentes</Text>
-              <ChevronDown size={14} color={colors.textMid} strokeWidth={1.8} />
+              <Image source={IC.chevronBaixo} style={{ width: 12, height: 12, tintColor: colors.textMid }} />
             </TouchableOpacity>
             <View style={styles.viewToggle}>
               <TouchableOpacity style={[styles.viewButton, viewMode === 'grid' && styles.viewButtonActive]} onPress={() => setViewMode('grid')}>
-                <LayoutGrid size={16} color={viewMode === 'grid' ? '#fff' : colors.muted} strokeWidth={1.8} />
+                <Image source={IC.galeria} style={{ width: 14, height: 14, tintColor: viewMode === 'grid' ? '#fff' : colors.muted }} />
               </TouchableOpacity>
               <TouchableOpacity style={[styles.viewButton, viewMode === 'list' && styles.viewButtonActive]} onPress={() => setViewMode('list')}>
-                <ListIcon size={16} color={viewMode === 'list' ? '#fff' : colors.muted} strokeWidth={1.8} />
+                <Image source={IC.menu} style={{ width: 14, height: 14, tintColor: viewMode === 'list' ? '#fff' : colors.muted }} />
               </TouchableOpacity>
             </View>
           </View>
 
           {groups.length === 0 ? (
             <View style={styles.empty}>
-              <ImageIcon size={48} color="rgba(255,255,255,0.24)" strokeWidth={1.4} />
+              <Image source={IC.foto} style={{ width: 48, height: 48, tintColor: 'rgba(255,255,255,0.24)' }} />
               <Text style={styles.emptyTitle}>Nenhuma mídia ainda</Text>
               <Text style={styles.emptySub}>Fotos e vídeos da atividade ativa aparecem aqui.</Text>
             </View>
@@ -185,10 +180,12 @@ export default function GalleryScreen() {
   );
 }
 
-function Chip({ label, active, onPress, Icon }) {
+function Chip({ label, active, onPress, iconSrc }) {
   return (
     <TouchableOpacity style={[styles.chip, active && styles.chipActive]} onPress={onPress} activeOpacity={0.85}>
-      {Icon ? <Icon size={14} color={active ? '#fff' : colors.textMid} strokeWidth={1.8} /> : null}
+      {iconSrc ? (
+        <Image source={iconSrc} style={{ width: 13, height: 13, tintColor: active ? '#fff' : colors.textMid, resizeMode: 'contain' }} />
+      ) : null}
       <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
     </TouchableOpacity>
   );
@@ -202,14 +199,16 @@ function GridItem({ item, onPress }) {
         <Image source={{ uri: item.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
       ) : (
         <View style={styles.gridPlaceholder}>
-          {video ? <Video size={28} color="#A78BFA" strokeWidth={1.8} /> : <ImageIcon size={28} color="#4EA3FF" strokeWidth={1.8} />}
+          <Image source={video ? IC.video : IC.foto} style={{ width: 26, height: 26, tintColor: video ? '#A78BFA' : '#4EA3FF' }} />
         </View>
       )}
       <View style={styles.mediaBadge}>
-        {video ? <Video size={11} color="#fff" strokeWidth={2} /> : <ImageIcon size={11} color="#fff" strokeWidth={2} />}
+        <Image source={video ? IC.video : IC.foto} style={{ width: 10, height: 10, tintColor: '#fff' }} />
       </View>
       {item.favorite ? (
-        <View style={styles.starBadge}><Star size={14} color="#fff" fill="#fff" strokeWidth={1.5} /></View>
+        <View style={styles.starBadge}>
+          <Image source={IC.favorito} style={{ width: 12, height: 12, tintColor: '#fff' }} />
+        </View>
       ) : null}
       {video ? <Text style={styles.videoDuration}>0:42</Text> : null}
     </TouchableOpacity>
@@ -223,17 +222,15 @@ function ListItem({ item, onPress }) {
       <View style={styles.listThumb}>
         {item.uri && !video ? (
           <Image source={{ uri: item.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        ) : video ? (
-          <Video size={18} color="#A78BFA" strokeWidth={1.8} />
         ) : (
-          <ImageIcon size={18} color="#4EA3FF" strokeWidth={1.8} />
+          <Image source={video ? IC.video : IC.foto} style={{ width: 18, height: 18, tintColor: video ? '#A78BFA' : '#4EA3FF' }} />
         )}
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
         <Text style={styles.listMeta} numberOfLines={1}>{formatBytes(item.size)} · {video ? 'Vídeo' : 'Foto'}</Text>
       </View>
-      {item.ok ? <CheckCircle2 size={18} color={colors.active} strokeWidth={2.2} /> : <AlertCircle size={18} color={colors.error} strokeWidth={2.2} />}
+      <Image source={item.ok ? IC.check : IC.atencao} style={{ width: 18, height: 18, tintColor: item.ok ? colors.active : colors.error }} />
     </TouchableOpacity>
   );
 }
@@ -244,27 +241,27 @@ function SyncFooter({ stats, items }) {
   return (
     <View style={styles.syncFooter}>
       <View style={styles.syncLeft}>
-        <RefreshCw size={18} color={colors.textMid} strokeWidth={1.8} />
+        <Image source={IC.sincronizando} style={{ width: 18, height: 18, tintColor: colors.textMid }} />
         <View>
           <Text style={styles.syncLabel}>Sincronização</Text>
           <Text style={styles.syncSub}>Última: Hoje, 09:40</Text>
         </View>
       </View>
-      <SyncMetric label="Enviados" value={sent} color={colors.active} Icon={CheckCircle2} />
-      <SyncMetric label="Enviando" value={0} color={colors.uploading} Icon={UploadCloud} />
-      <SyncMetric label="Pendentes" value={0} color={colors.warning} Icon={Clock3} />
-      <SyncMetric label="Com erro" value={errors} color={colors.error} Icon={AlertCircle} />
+      <SyncMetric label="Enviados"  value={sent}    color={colors.active}    iconSrc={IC.check} />
+      <SyncMetric label="Enviando"  value={0}       color={colors.uploading} iconSrc={IC.enviando} />
+      <SyncMetric label="Pendentes" value={0}       color={colors.warning}   iconSrc={IC.aguardando} />
+      <SyncMetric label="Com erro"  value={errors}  color={colors.error}     iconSrc={IC.erro} />
     </View>
   );
 }
 
-function SyncMetric({ label, value, color, Icon }) {
+function SyncMetric({ label, value, color, iconSrc }) {
   return (
     <View style={styles.syncMetric}>
       <Text style={styles.syncMetricLabel}>{label}</Text>
       <View style={styles.syncMetricRow}>
         <Text style={styles.syncMetricValue}>{value}</Text>
-        <Icon size={14} color={color} strokeWidth={2.1} />
+        <Image source={iconSrc} style={{ width: 13, height: 13, tintColor: color }} />
       </View>
     </View>
   );
@@ -283,7 +280,7 @@ function ItemDetailModal({ item, onClose, onShare }) {
             {item.eventName ? <Text style={detail.event}>{item.eventName}</Text> : null}
           </View>
           <TouchableOpacity style={detail.closeBtn} onPress={onClose}>
-            <X size={22} color="#fff" strokeWidth={2} />
+            <Image source={IC.fechar} style={{ width: 18, height: 18, tintColor: '#fff' }} />
           </TouchableOpacity>
         </SafeAreaView>
 
@@ -292,7 +289,7 @@ function ItemDetailModal({ item, onClose, onShare }) {
             <Image source={{ uri: item.uri }} style={detail.image} resizeMode="contain" />
           ) : (
             <View style={detail.placeholder}>
-              {video ? <Video size={64} color="rgba(255,255,255,0.35)" strokeWidth={1.5} /> : <ImageIcon size={64} color="rgba(255,255,255,0.35)" strokeWidth={1.5} />}
+              <Image source={video ? IC.video : IC.foto} style={{ width: 58, height: 58, tintColor: 'rgba(255,255,255,0.35)' }} />
               <Text style={detail.placeholderText}>{video ? 'Prévia de vídeo indisponível' : 'Pré-visualização indisponível'}</Text>
             </View>
           )}
@@ -301,18 +298,18 @@ function ItemDetailModal({ item, onClose, onShare }) {
         <SafeAreaView edges={['bottom']} style={detail.bottomBar}>
           {item.serverPath ? (
             <View style={detail.infoRow}>
-              <FolderOpen size={14} color={colors.brand} strokeWidth={1.8} />
+              <Image source={IC.galeria} style={{ width: 14, height: 14, tintColor: colors.brand }} />
               <Text style={detail.infoText} numberOfLines={1}>{item.serverPath}</Text>
             </View>
           ) : null}
           <View style={detail.actions}>
             <TouchableOpacity style={detail.actionBtn} onPress={onShare}>
-              <Share2 size={20} color="#fff" strokeWidth={2} />
+              <Image source={IC.compartilhar} style={{ width: 20, height: 20, tintColor: '#fff' }} />
               <Text style={detail.actionLabel}>Compartilhar</Text>
             </TouchableOpacity>
             {!item.ok ? (
               <TouchableOpacity style={detail.actionBtn}>
-                <RotateCw size={20} color={colors.warning} strokeWidth={2} />
+                <Image source={IC.restaurar} style={{ width: 20, height: 20, tintColor: colors.warning }} />
                 <Text style={[detail.actionLabel, { color: colors.warning }]}>Reenviar</Text>
               </TouchableOpacity>
             ) : null}

@@ -4,12 +4,8 @@ import {
   TouchableOpacity, ActivityIndicator, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Image as ImageIcon, Video, CheckCircle2, AlertCircle,
-  Clock3, RefreshCw, Pause, RotateCw,
-} from 'lucide-react-native';
-
 import { colors } from '../theme';
+import { IC } from '../src/theme/icons';
 import { getEvent } from '../services/api';
 import {
   getServerConfig, setActiveEvent, getActiveEvent,
@@ -214,10 +210,10 @@ export default function EventDetailScreen({ navigation, route }) {
               </TouchableOpacity>
             </View>
             <View style={styles.summaryGrid}>
-              <SummaryCard label="Enviados"  value={uploaded}  Icon={CheckCircle2} color={colors.active} />
-              <SummaryCard label="Enviando"  value={uploading} Icon={RefreshCw}    color={colors.uploading} />
-              <SummaryCard label="Pendentes" value={pending}   Icon={Clock3}       color={colors.warning} />
-              <SummaryCard label="Com erro"  value={errors}    Icon={AlertCircle}  color={colors.error} />
+              <SummaryCard label="Enviados"  value={uploaded}  iconSrc={IC.check}        color={colors.active} />
+              <SummaryCard label="Enviando"  value={uploading} iconSrc={IC.enviando}     color={colors.uploading} />
+              <SummaryCard label="Pendentes" value={pending}   iconSrc={IC.aguardando}   color={colors.warning} />
+              <SummaryCard label="Com erro"  value={errors}    iconSrc={IC.erro}         color={colors.error} />
             </View>
           </>
         )}
@@ -275,16 +271,13 @@ function InfoRow({ label, value }) {
 function QueueItem({ entry }) {
   const isPhoto = !isVideoItem(entry);
   const status = getUploadStatus(entry);
-  const StatusIcon = status.Icon;
   return (
     <View style={styles.queueCard}>
       <View style={styles.queueThumb}>
         {entry.uri && isPhoto ? (
           <Image source={{ uri: entry.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        ) : isPhoto ? (
-          <ImageIcon size={20} color="#4EA3FF" strokeWidth={1.8} />
         ) : (
-          <Video size={20} color="#A78BFA" strokeWidth={1.8} />
+          <Image source={isPhoto ? IC.foto : IC.video} style={{ width: 20, height: 20, tintColor: isPhoto ? '#4EA3FF' : '#A78BFA' }} />
         )}
       </View>
       <View style={{ flex: 1 }}>
@@ -295,7 +288,7 @@ function QueueItem({ entry }) {
       </View>
       <View style={styles.queueRight}>
         <Text style={[styles.queueStatusText, { color: status.color }]}>{status.label}</Text>
-        <StatusIcon size={18} color={status.color} strokeWidth={2} />
+        <Image source={status.iconSrc} style={{ width: 18, height: 18, tintColor: status.color }} />
       </View>
     </View>
   );
@@ -304,37 +297,33 @@ function QueueItem({ entry }) {
 function MediaTile({ entry }) {
   const video = isVideoItem(entry);
   const status = getUploadStatus(entry);
-  const StatusIcon = status.Icon;
   return (
     <View style={styles.mediaTile}>
       {entry.uri && !video ? (
         <Image source={{ uri: entry.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
       ) : (
         <View style={styles.mediaPlaceholder}>
-          {video
-            ? <Video size={28} color="rgba(255,255,255,0.55)" strokeWidth={1.8} />
-            : <ImageIcon size={28} color="rgba(255,255,255,0.55)" strokeWidth={1.8} />
-          }
+          <Image source={video ? IC.video : IC.foto} style={{ width: 28, height: 28, tintColor: 'rgba(255,255,255,0.55)' }} />
         </View>
       )}
       <View style={styles.mediaTypeBadge}>
-        {video ? <Video size={11} color="#fff" strokeWidth={2} /> : <ImageIcon size={11} color="#fff" strokeWidth={2} />}
+        <Image source={video ? IC.video : IC.foto} style={{ width: 10, height: 10, tintColor: '#fff' }} />
       </View>
       <View style={[styles.mediaStatusBadge, { borderColor: status.color + '88' }]}>
-        <StatusIcon size={12} color={status.color} strokeWidth={2.2} />
+        <Image source={status.iconSrc} style={{ width: 11, height: 11, tintColor: status.color }} />
       </View>
     </View>
   );
 }
 
-function SummaryCard({ label, value, Icon, color }) {
+function SummaryCard({ label, value, iconSrc, color }) {
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryLabel}>{label}</Text>
       <View style={styles.summaryRow}>
         <Text style={styles.summaryValue}>{String(value).padStart(2, '0')}</Text>
         <View style={[styles.summaryIcon, { backgroundColor: color + '22', borderColor: color + '66' }]}>
-          <Icon size={14} color={color} strokeWidth={2} />
+          <Image source={iconSrc} style={{ width: 13, height: 13, tintColor: color }} />
         </View>
       </View>
     </View>
@@ -346,10 +335,10 @@ function isVideoItem(item) {
 }
 
 function getUploadStatus(entry) {
-  if (entry?.status === 'uploading') return { label: 'Enviando', color: colors.uploading, Icon: Pause };
-  if (entry?.status === 'pending') return { label: 'Pendente', color: colors.warning, Icon: Clock3 };
-  if (!entry?.ok) return { label: 'Erro', color: colors.error, Icon: RotateCw };
-  return { label: 'Enviado', color: colors.active, Icon: CheckCircle2 };
+  if (entry?.status === 'uploading') return { label: 'Enviando', color: colors.uploading, iconSrc: IC.pausar };
+  if (entry?.status === 'pending')   return { label: 'Pendente', color: colors.warning,   iconSrc: IC.aguardando };
+  if (!entry?.ok)                    return { label: 'Erro',     color: colors.error,     iconSrc: IC.restaurar };
+  return                              { label: 'Enviado',  color: colors.active,    iconSrc: IC.check };
 }
 
 function formatDate(s) {
