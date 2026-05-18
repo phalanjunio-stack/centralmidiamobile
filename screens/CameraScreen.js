@@ -23,7 +23,7 @@ import CloudStatus         from '../components/camera/CloudStatus';
 import UploadToast         from '../components/camera/UploadToast';
 import CameraSettingsSheet from '../components/camera/CameraSettingsSheet';
 
-import { ChevronDown, ChevronRight } from 'lucide-react-native';
+import { ChevronDown, ChevronRight, Settings as SettingsGear } from 'lucide-react-native';
 import { IC } from '../src/theme/icons';
 
 import { colors } from '../src/theme';
@@ -37,11 +37,13 @@ import {
 import { uploadCapture } from '../services/api';
 import { unregisterBackgroundSync } from '../services/sync';
 
+// Zoom como fator REAL da câmera. 1 = visão normal.
+// Será clampado ao range do device (device.minZoom .. device.maxZoom).
 const ZOOM_LEVELS = [
-  { label: '0,5', value: 0 },
-  { label: '1x',  value: 0.25 },
-  { label: '2',   value: 0.5 },
-  { label: '3',   value: 0.75 },
+  { label: '0,5', value: 0.5 },
+  { label: '1x',  value: 1   },
+  { label: '2',   value: 2   },
+  { label: '3',   value: 3   },
 ];
 
 export default function CameraScreen({ navigation, route }) {
@@ -77,8 +79,8 @@ export default function CameraScreen({ navigation, route }) {
   const [queueCount, setQueueCount] = useState(0);
   const [folderStats, setFolderStats] = useState({ files: 0, sizeGB: 0 });
 
-  // Camera controls
-  const [zoom, setZoom]         = useState(0.25);
+  // Camera controls — zoom em fator nativo (1 = normal)
+  const [zoom, setZoom]         = useState(1);
   const [exposure, setExposure] = useState(0);
   const [showExposure, setShowExposure] = useState(false);
   const [focusPoint, setFocusPoint] = useState(null);
@@ -122,7 +124,9 @@ export default function CameraScreen({ navigation, route }) {
           const dx = t[0].pageX - t[1].pageX, dy = t[0].pageY - t[1].pageY;
           const distance = Math.sqrt(dx*dx + dy*dy);
           const scale = distance / initialPinchRef.current.distance;
-          setZoom(Math.max(0, Math.min(1, initialPinchRef.current.zoom + (scale - 1) * 0.5)));
+          // Aplica scale do gesto sobre o zoom inicial (limite 0.5x a 10x)
+          const next = initialPinchRef.current.zoom * scale;
+          setZoom(Math.max(0.5, Math.min(10, next)));
         }
       },
       onPanResponderRelease: () => { initialPinchRef.current = null; },
@@ -343,7 +347,7 @@ export default function CameraScreen({ navigation, route }) {
     : '/Sem evento ativo';
   const totalUploaded = folderStats.files;
   const totalSize = folderStats.sizeGB.toFixed(1);
-  const zoomLabel = zoom === 0 ? '0,5x' : zoom < 0.4 ? '1x' : zoom < 0.65 ? '2x' : '3x';
+  const zoomLabel = zoom < 0.75 ? '0,5x' : zoom < 1.5 ? '1x' : zoom < 2.5 ? '2x' : `${zoom.toFixed(1)}x`;
   const recTime = `${String(Math.floor(recordSecs / 60)).padStart(2,'0')}:${String(recordSecs % 60).padStart(2,'0')}`;
 
   return (
@@ -356,7 +360,7 @@ export default function CameraScreen({ navigation, route }) {
         device={device}
         outputs={mode === 'video' ? [photoOutput, videoOutput] : [photoOutput]}
         isActive={true}
-        zoom={Math.max(device.minZoom ?? 1, Math.min(device.maxZoom ?? 10, 1 + zoom * ((device.maxZoom ?? 10) - 1)))}
+        zoom={Math.max(device.minZoom ?? 1, Math.min(device.maxZoom ?? 10, zoom))}
         exposure={exposure}
         torchMode={flash === 'on' ? 'on' : 'off'}
       />
@@ -418,7 +422,8 @@ export default function CameraScreen({ navigation, route }) {
               <Image source={IC.virarCamera} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
             </CircleBtn>
             <CircleBtn onPress={() => setSettingsOpen(true)}>
-              <Image source={IC.configuracoes} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
+              {/* Engrenagem real (lucide) — os PNGs engrenagem_* da iconografia parecem sol, então fallback aqui */}
+              <SettingsGear size={18} color="#fff" strokeWidth={2.1} />
             </CircleBtn>
           </View>
         </View>
@@ -472,7 +477,7 @@ export default function CameraScreen({ navigation, route }) {
         <View style={styles.zoomPillsWrap}>
           <View style={styles.zoomPills}>
             {ZOOM_LEVELS.map(z => {
-              const active = Math.abs(zoom - z.value) < 0.12;
+              const active = Math.abs(zoom - z.value) < 0.3;
               return (
                 <TouchableOpacity
                   key={z.label}
