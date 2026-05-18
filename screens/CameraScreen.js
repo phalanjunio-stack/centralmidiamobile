@@ -418,7 +418,7 @@ export default function CameraScreen({ navigation, route }) {
               <Image source={IC.virarCamera} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
             </CircleBtn>
             <CircleBtn onPress={() => setSettingsOpen(true)}>
-              <Image source={IC.engrenagemCamera} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
+              <Image source={IC.configuracoes} style={{ width: 18, height: 18, tintColor: '#fff', resizeMode: 'contain' }} />
             </CircleBtn>
           </View>
         </View>

@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { colors } from '../theme';
 import { IC } from '../src/theme/icons';
+import SyncRing from '../components/SyncRing';
 import {
   getSyncLog, getSyncStats, getLastSync,
   getServerConfig, getSettings, saveSettings,
@@ -122,11 +123,7 @@ export default function UploadsScreen() {
             <View style={styles.mainCard}>
               {/* Ring + counts */}
               <View style={styles.topRow}>
-                <View style={styles.ring}>
-                  <View style={[styles.ringArc, { borderColor: colors.brand }]} />
-                  <Text style={styles.ringValue}>{pct}%</Text>
-                  <Text style={styles.ringLabel}>Sincronizado</Text>
-                </View>
+                <SyncRing pct={pct} size={140} />
 
                 <View style={styles.counts}>
                   <CountLine label="Enviados"  value={counts.sent}      icon={IC.enviado}    color={colors.active} />
@@ -135,6 +132,7 @@ export default function UploadsScreen() {
                   <CountLine label="Com erro"  value={counts.errors}    icon={IC.erro}       color={colors.error} />
                 </View>
               </View>
+
 
               {/* Wi-Fi section */}
               <View style={styles.networkBox}>
@@ -221,9 +219,13 @@ export default function UploadsScreen() {
 function CountLine({ label, value, icon, color }) {
   return (
     <View style={styles.countLine}>
+      {/* Esquerda: número grande + label */}
+      <View style={styles.countLeft}>
+        <Text style={styles.countValue}>{value}</Text>
+        <Text style={styles.countLabel}>{label}</Text>
+      </View>
+      {/* Direita: ícone colorido */}
       <Image source={icon} style={[styles.countIcon, { tintColor: color }]} />
-      <Text style={styles.countValue}>{value}</Text>
-      <Text style={styles.countLabel}>{label}</Text>
     </View>
   );
 }
@@ -357,21 +359,23 @@ const styles = StyleSheet.create({
     borderRadius: 18, padding: 16, marginBottom: 14,
     gap: 14,
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
-  ring: {
-    width: 96, height: 96, borderRadius: 48,
-    borderWidth: 9, borderColor: 'rgba(59,130,246,0.18)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  ringArc: { ...StyleSheet.absoluteFillObject, borderWidth: 9, borderRadius: 48, opacity: 0.75 },
-  ringValue: { color: colors.text, fontSize: 27, fontFamily: 'Inter_800ExtraBold' },
-  ringLabel: { color: colors.brand, fontSize: 10, fontFamily: 'Inter_600SemiBold' },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6 },
 
-  counts: { flex: 1, gap: 10 },
-  countLine: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  countIcon: { width: 22, height: 22, resizeMode: 'contain' },
-  countValue: { color: colors.text, fontSize: 18, fontFamily: 'Inter_800ExtraBold', minWidth: 30 },
-  countLabel: { color: colors.textMid, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  counts: { flex: 1, gap: 12, paddingLeft: 8 },
+  countLine: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    gap: 8,
+  },
+  countLeft: {
+    flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 10,
+  },
+  countIcon: { width: 26, height: 26, resizeMode: 'contain' },
+  countValue: { color: colors.text, fontSize: 22, fontFamily: 'Inter_800ExtraBold', minWidth: 28, textAlign: 'right' },
+  countLabel: { color: colors.textMid, fontSize: 13.5, fontFamily: 'Inter_600SemiBold' },
+  syncedLabel: {
+    color: colors.brand, fontSize: 10, letterSpacing: 1.4,
+    fontFamily: 'Inter_800ExtraBold', textAlign: 'center', marginTop: 4,
+  },
 
   /* NETWORK */
   networkBox: {
