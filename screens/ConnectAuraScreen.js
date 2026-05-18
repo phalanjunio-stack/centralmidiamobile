@@ -14,6 +14,7 @@ import {
 } from 'lucide-react-native';
 
 import { AuraRing, AuraButton, GlassCard } from '../src/components/aura';
+import OrbitalLogo from '../components/OrbitalLogo';
 import {
   colors as auraColors, typography, spacing, radii, glow,
 } from '../src/theme';
@@ -96,17 +97,10 @@ export default function ConnectAuraScreen({ navigation }) {
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header: aura + logo + titulo */}
+          {/* Header: orbital splash + titulo */}
           <View style={styles.header}>
             <View style={styles.auraWrap}>
-              <AuraRing
-                size={150}
-                state={scanning ? 'sync' : 'idle'}
-                spinning={scanning}
-              />
-              <View style={styles.auraCore}>
-                <LogoIcon size={42} color="#FFFFFF" />
-              </View>
+              <OrbitalLogo size={210} logoSize={68} spinning={scanning} />
             </View>
             <Text style={styles.brand}>
               contourline <Text style={styles.brandSub}>BACKUP</Text>
@@ -336,8 +330,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   auraWrap: {
-    width: 150,
-    height: 150,
+    width: 230,
+    height: 230,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
