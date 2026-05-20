@@ -19,6 +19,7 @@ import { pingServer, pairDevice } from '../services/api';
 // - JSON: { type: "contourline-pair", server: {...}, pairCode: "ABC123" }  ← NOVO formato preferido
 // - JSON: { type: "contourline-event", server: {...}, event: {...} }
 // - JSON: { type: "contourline-server", server: {...} }
+// - JSON: { type: "contourline-equipment", model: "UNYQUE_PRO", serial: "..." } ← QR no equipamento físico
 // - URL: https://...trycloudflare.com
 // - String legada: contourline://...
 function parseQR(raw) {
@@ -31,7 +32,8 @@ function parseQR(raw) {
       const obj = JSON.parse(s);
       if (obj.type === 'contourline-pair'
           || obj.type === 'contourline-event'
-          || obj.type === 'contourline-server') return obj;
+          || obj.type === 'contourline-server'
+          || obj.type === 'contourline-equipment') return obj;
     } catch {}
   }
 
@@ -108,6 +110,19 @@ export default function QRScannerScreen({ navigation, route }) {
     }
 
     try {
+      // ── NOVO: QR do equipamento físico (Contourline) ──
+      // Ex: { type: "contourline-equipment", model: "UNYQUE_PRO", serial: "ABC123" }
+      // → abre CreateProject já preenchido com tipo "Treinamento" + equipamento.
+      if (parsed.type === 'contourline-equipment') {
+        navigation.replace('CreateProject', {
+          prefilledType: 'treinamento',
+          prefilledEquipment: parsed.model || 'Outro',
+          prefilledName: `Treinamento ${parsed.model || ''}`.trim(),
+          equipmentSerial: parsed.serial || null,
+        });
+        return;
+      }
+
       // ── NOVO: QR de pareamento (sem senha) ──
       if (parsed.type === 'contourline-pair') {
         if (!parsed.server?.url || !parsed.pairCode) {

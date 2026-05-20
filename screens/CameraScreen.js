@@ -64,7 +64,17 @@ export default function CameraScreen({ navigation, route }) {
   const recorderRef = useRef(null);
 
   const [flash, setFlash]   = useState('off');
+  // mode: 'photo' | 'video' | 'slow'
   const [mode, setMode]     = useState(route?.params?.initialMode || 'photo');
+
+  // Detecta se o device suporta slow-motion (≥120fps em 720p ou 1080p)
+  const slowFormat = device?.formats?.find(f =>
+    f.maxFps >= 120 &&
+    f.videoWidth <= 1920 &&
+    f.videoHeight <= 1080
+  );
+  const slowSupported = !!slowFormat;
+  const slowFps = slowFormat ? Math.min(240, slowFormat.maxFps) : 120;
 
   const [recording, setRecording] = useState(false);
   const [recordSecs, setRecordSecs] = useState(0);
@@ -362,7 +372,8 @@ export default function CameraScreen({ navigation, route }) {
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
         device={device}
-        outputs={mode === 'video' ? [photoOutput, videoOutput] : [photoOutput]}
+        outputs={(mode === 'video' || mode === 'slow') ? [photoOutput, videoOutput] : [photoOutput]}
+        constraints={mode === 'slow' && slowSupported ? [{ fps: slowFps }] : undefined}
         isActive={true}
         zoom={Math.max(device.minZoom ?? 1, Math.min(device.maxZoom ?? 10, zoom))}
         exposure={exposure}
@@ -513,6 +524,15 @@ export default function CameraScreen({ navigation, route }) {
             >
               <Text style={[styles.modeText, mode === 'video' && styles.modeTextActive]}>Vídeo</Text>
             </TouchableOpacity>
+            {slowSupported && (
+              <TouchableOpacity
+                style={[styles.modeOption, mode === 'slow' && styles.modeOptionActive]}
+                onPress={() => !recording && setMode('slow')}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.modeText, mode === 'slow' && styles.modeTextActive]}>Slow</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -520,9 +540,11 @@ export default function CameraScreen({ navigation, route }) {
           <View style={styles.recBlock}>
             <View style={styles.recBadge}>
               <View style={styles.recDot} />
-              <Text style={styles.recText}>REC {recTime}</Text>
+              <Text style={styles.recText}>
+                REC {recTime}{mode === 'slow' ? ` · ${slowFps}fps` : ''}
+              </Text>
             </View>
-            {micGranted && <VUMeter active={recording} style={{ marginTop: 8 }} />}
+            {micGranted && mode !== 'slow' && <VUMeter active={recording} style={{ marginTop: 8 }} />}
           </View>
         )}
 

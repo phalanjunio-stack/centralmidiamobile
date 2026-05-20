@@ -27,12 +27,14 @@ const EQUIPMENT_OPTIONS = [
   'Outro',
 ];
 
-export default function CreateProjectScreen({ navigation }) {
-  const [name, setName] = useState('');
-  const [type, setType] = useState('treinamento');
-  const [equipment, setEquipment] = useState('UNYQUE PRO');
+export default function CreateProjectScreen({ navigation, route }) {
+  const params = route?.params || {};
+  const [name, setName] = useState(params.prefilledName || '');
+  const [type, setType] = useState(params.prefilledType || 'treinamento');
+  const [equipment, setEquipment] = useState(params.prefilledEquipment || 'UNYQUE PRO');
   const [showEquipDropdown, setShowEquipDropdown] = useState(false);
   const [setActive, setSetActive] = useState(true);
+  const equipmentSerial = params.equipmentSerial || null;
 
   function buildDestination() {
     const typeFolder = {

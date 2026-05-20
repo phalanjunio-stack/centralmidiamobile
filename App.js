@@ -27,6 +27,10 @@ import EventPickerScreen   from './screens/EventPickerScreen';
 import CameraScreen        from './screens/CameraScreen';
 import ConnectAuraScreen   from './screens/ConnectAuraScreen';
 import CreateProjectScreen from './screens/CreateProjectScreen';
+import PresentationScreen  from './screens/PresentationScreen';
+import OnboardingScreen    from './screens/OnboardingScreen';
+import AsyncStorage        from '@react-native-async-storage/async-storage';
+import { ONBOARDING_KEY }  from './screens/OnboardingScreen';
 
 import * as ExpoSplash from 'expo-splash-screen';
 
@@ -405,9 +409,17 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        const result = await runBootSequence();
+        const [result, onboardingDone] = await Promise.all([
+          runBootSequence(),
+          AsyncStorage.getItem(ONBOARDING_KEY).catch(() => null),
+        ]);
         setBootResult(result);
-        setInitialRoute(result.hasToken ? 'Main' : 'ConnectAura');
+        // Onboarding tem prioridade na 1ª abertura
+        if (!onboardingDone) {
+          setInitialRoute('Onboarding');
+        } else {
+          setInitialRoute(result.hasToken ? 'Main' : 'ConnectAura');
+        }
       } catch (e) {
         console.warn('[boot] falha:', e?.message);
         setBootResult({ token: null, hasToken: false });
@@ -456,6 +468,11 @@ export default function App() {
             animationDuration: 220,
           }}
         >
+          <Stack.Screen
+            name="Onboarding"
+            component={OnboardingScreen}
+            options={{ headerShown: false, animation: 'fade' }}
+          />
           <Stack.Screen
             name="ConnectAura"
             component={ConnectAuraScreen}
@@ -515,6 +532,11 @@ export default function App() {
             name="CreateProject"
             component={CreateProjectScreen}
             options={{ headerShown: false, presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="Presentation"
+            component={PresentationScreen}
+            options={{ headerShown: false, animation: 'fade' }}
           />
         </Stack.Navigator>
       </NavigationContainer>

@@ -8,6 +8,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../theme';
 import { IC } from '../src/theme/icons';
 import LogoIcon from '../components/icons/LogoIcon';
+import { quickShare, shareToWhatsApp } from '../services/share';
+import { listRemoteCaptures, mergeLocalAndRemote } from '../services/galleryRemote';
 import {
   getDeviceProfile, getActiveEvent, getSyncLog, getSyncStats,
 } from '../services/storage';
@@ -29,6 +31,9 @@ export default function GalleryScreen() {
   const [log, setLog] = useState([]);
   const [stats, setStats] = useState({ total: 0, today: 0, errors: 0 });
   const [selected, setSelected] = useState(null);
+  const [remoteItems, setRemoteItems] = useState([]);
+  const [remoteCursor, setRemoteCursor] = useState(null);
+  const [remoteLoading, setRemoteLoading] = useState(false);
 
   async function loadData() {
     const [p, ev, lg, st] = await Promise.all([
@@ -38,6 +43,27 @@ export default function GalleryScreen() {
     setEvent(ev);
     setLog(lg);
     setStats(st);
+
+    // Carrega 1ª página do Drive (via sitelocal)
+    if (ev?.id) {
+      setRemoteLoading(true);
+      const { items: rItems, nextCursor } = await listRemoteCaptures(ev.id);
+      setRemoteItems(rItems);
+      setRemoteCursor(nextCursor);
+      setRemoteLoading(false);
+    } else {
+      setRemoteItems([]);
+      setRemoteCursor(null);
+    }
+  }
+
+  async function loadMoreRemote() {
+    if (!event?.id || !remoteCursor || remoteLoading) return;
+    setRemoteLoading(true);
+    const { items: more, nextCursor } = await listRemoteCaptures(event.id, remoteCursor);
+    setRemoteItems(prev => [...prev, ...more]);
+    setRemoteCursor(nextCursor);
+    setRemoteLoading(false);
   }
 
   useFocusEffect(useCallback(() => { loadData(); }, []));
@@ -49,18 +75,20 @@ export default function GalleryScreen() {
   }
 
   const items = useMemo(() => {
-    let list = log;
-    if (event?.id) list = list.filter((item) => item.eventId === event.id);
+    // Merge: locais (do log) + remotos (Drive via sitelocal)
+    const localFiltered = event?.id ? log.filter((item) => item.eventId === event.id) : log;
+    let list = mergeLocalAndRemote(localFiltered, remoteItems);
+
     if (filter === 'photo') list = list.filter((item) => !isVideoItem(item));
     if (filter === 'video') list = list.filter((item) => isVideoItem(item));
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter((item) =>
-        [item.name, item.eventName, item.serverPath].filter(Boolean).join(' ').toLowerCase().includes(q)
+        [item.name, item.eventName, item.serverPath, item.profileName].filter(Boolean).join(' ').toLowerCase().includes(q)
       );
     }
     return list;
-  }, [log, event, filter, search]);
+  }, [log, remoteItems, event, filter, search]);
 
   const groups = useMemo(() => {
     const map = new Map();
@@ -171,9 +199,23 @@ export default function GalleryScreen() {
       <ItemDetailModal
         item={selected}
         onClose={() => setSelected(null)}
-        onShare={async () => {
-          if (!selected?.uri) return;
-          try { await Share.share({ url: selected.uri, message: selected.name }); } catch {}
+        onShare={() => {
+          if (!selected) return;
+          quickShare({
+            captureId: selected.id,
+            localUri: selected.uri,
+            name: selected.name,
+            eventName: selected.eventName,
+          });
+        }}
+        onShareWhatsApp={() => {
+          if (!selected) return;
+          shareToWhatsApp({
+            captureId: selected.id,
+            localUri: selected.uri,
+            name: selected.name,
+            eventName: selected.eventName,
+          });
         }}
       />
     </View>
@@ -267,7 +309,7 @@ function SyncMetric({ label, value, color, iconSrc }) {
   );
 }
 
-function ItemDetailModal({ item, onClose, onShare }) {
+function ItemDetailModal({ item, onClose, onShare, onShareWhatsApp }) {
   if (!item) return null;
   const video = isVideoItem(item);
   return (
@@ -306,6 +348,10 @@ function ItemDetailModal({ item, onClose, onShare }) {
             <TouchableOpacity style={detail.actionBtn} onPress={onShare}>
               <Image source={IC.compartilhar} style={{ width: 20, height: 20, tintColor: '#fff' }} />
               <Text style={detail.actionLabel}>Compartilhar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={detail.actionBtn} onPress={onShareWhatsApp}>
+              <Image source={IC.link} style={{ width: 20, height: 20, tintColor: '#25D366' }} />
+              <Text style={[detail.actionLabel, { color: '#25D366' }]}>WhatsApp</Text>
             </TouchableOpacity>
             {!item.ok ? (
               <TouchableOpacity style={detail.actionBtn}>
