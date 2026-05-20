@@ -6,6 +6,7 @@ import {
   View, Text, StyleSheet, Image, TouchableOpacity, Animated, Easing,
   Dimensions, FlatList, StatusBar,
 } from 'react-native';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { colors } from '../theme';
@@ -28,11 +29,13 @@ export default function PresentationScreen({ navigation }) {
   const intervalRef = useRef(null);
   const hudTimerRef = useRef(null);
 
-  // Esconde status bar (modo TV) — rotação livre via app.json caso queira deitar
+  // Modo TV: esconde status bar + libera rotação (vira paisagem pro telão)
   useFocusEffect(useCallback(() => {
     StatusBar.setHidden(true, 'fade');
+    ScreenOrientation.unlockAsync().catch(() => {});
     return () => {
       StatusBar.setHidden(false, 'fade');
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
     };
   }, []));
 
