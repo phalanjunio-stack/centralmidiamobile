@@ -121,16 +121,22 @@ export default function UploadsScreen() {
 
             {/* MAIN CARD */}
             <View style={styles.mainCard}>
-              {/* Ring + counts */}
-              <View style={styles.topRow}>
-                <SyncRing pct={pct} size={140} />
+              {/* Ring centralizado com bytes embaixo */}
+              <View style={styles.ringWrap}>
+                <SyncRing
+                  pct={pct}
+                  size={180}
+                  stroke={13}
+                  subLabel={formatBytesLabel(counts.bytesUploaded, counts.bytesTotal)}
+                />
+              </View>
 
-                <View style={styles.counts}>
-                  <CountLine label="Enviados"  value={counts.sent}      icon={IC.enviado}    color={colors.active} />
-                  <CountLine label="Enviando"  value={counts.uploading} icon={IC.enviando}   color={colors.brand} />
-                  <CountLine label="Pendentes" value={counts.pending}   icon={IC.aguardando} color={colors.warning} />
-                  <CountLine label="Com erro"  value={counts.errors}    icon={IC.erro}       color={colors.error} />
-                </View>
+              {/* Grade 2x2 de contadores */}
+              <View style={styles.countsGrid}>
+                <CountLine label="Enviados"  value={counts.sent}      icon={IC.enviado}    color={colors.active} />
+                <CountLine label="Enviando"  value={counts.uploading} icon={IC.enviando}   color={colors.brand} />
+                <CountLine label="Pendentes" value={counts.pending}   icon={IC.aguardando} color={colors.warning} />
+                <CountLine label="Com erro"  value={counts.errors}    icon={IC.erro}       color={colors.error} />
               </View>
 
 
@@ -294,7 +300,27 @@ function getCounts(log, stats, syncing, progress) {
     ? Math.max(0, progress.total - progress.uploaded)
     : log.filter((l) => l.status === 'uploading').length;
   const pending = log.filter((l) => l.status === 'pending').length;
-  return { sent, errors, uploading, pending, totalWork: sent + errors + uploading + pending };
+
+  // Bytes — soma de tudo + enviados pra mostrar tipo "1.48 GB de 2.00 GB"
+  const bytesUploaded = log.filter((l) => l.ok).reduce((acc, l) => acc + (l.size || 0), 0);
+  const bytesTotal    = log.reduce((acc, l) => acc + (l.size || 0), 0);
+
+  return {
+    sent, errors, uploading, pending,
+    totalWork: sent + errors + uploading + pending,
+    bytesUploaded, bytesTotal,
+  };
+}
+
+function formatBytesLabel(uploaded, total) {
+  if (!total) return '0 B';
+  const fmt = (b) => {
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+    if (b < 1024 * 1024 * 1024) return `${(b / 1024 / 1024).toFixed(1)} MB`;
+    return `${(b / 1024 / 1024 / 1024).toFixed(2).replace('.', ',')} GB`;
+  };
+  return `${fmt(uploaded)} de ${fmt(total)}`;
 }
 
 function getStatus(entry) {
@@ -359,15 +385,31 @@ const styles = StyleSheet.create({
     borderRadius: 18, padding: 16, marginBottom: 14,
     gap: 14,
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6 },
+  /* Ring centralizado com bytes embaixo */
+  ringWrap: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
 
-  counts: { flex: 1, gap: 12, paddingLeft: 8 },
+  /* Grade 2x2 dos contadores */
+  countsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    paddingTop: 4,
+  },
   countLine: {
+    width: '47%', // 2 colunas com gap
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: 'rgba(8,14,26,0.6)',
+    paddingHorizontal: 12, paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
     gap: 8,
   },
   countLeft: {
-    flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 10,
+    flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8,
   },
   countIcon: { width: 26, height: 26, resizeMode: 'contain' },
   countValue: { color: colors.text, fontSize: 22, fontFamily: 'Inter_800ExtraBold', minWidth: 28, textAlign: 'right' },

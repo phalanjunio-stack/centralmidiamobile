@@ -12,6 +12,7 @@ export default function SyncRing({
   stroke = 11,
   color = '#1F8BFF',
   colorSoft = '#5AAEFF',
+  subLabel = null, // ex: "1,48 GB de 2,00 GB"
 }) {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -49,6 +50,7 @@ export default function SyncRing({
   const auraOpacity = auraPulse.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] });
 
   return (
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       {/* Aura pulsante atrás do anel */}
       <Animated.View
@@ -112,6 +114,12 @@ export default function SyncRing({
         </View>
       </View>
     </View>
+
+    {/* Sublabel embaixo do anel — ex: "1,48 GB de 2,00 GB" */}
+    {!!subLabel && (
+      <Text style={[styles.subLabel, { marginTop: 14 }]}>{subLabel}</Text>
+    )}
+    </View>
   );
 }
 
@@ -120,6 +128,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  subLabel: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: -0.3,
   },
   pct: {
     color: '#fff',
