@@ -248,7 +248,11 @@ export default function CameraScreen({ navigation, route }) {
 
     setQueueCount(c => c + 1);
     addPending(1);
-    showToast('info', 'Enviando...', type === 'photo' ? 'Foto' : 'Vídeo');
+    // Toast contextual com nome do evento ativo (Central Mídia: Processando para "X")
+    const sub = event?.name
+      ? `Central de Mídia · ${event.name}`
+      : (type === 'photo' ? 'Foto' : 'Vídeo');
+    showToast('info', 'Enviando...', sub);
 
     try {
       const result = await uploadCapture({ uri, mediaType: type, activeEvent: event, profile });
