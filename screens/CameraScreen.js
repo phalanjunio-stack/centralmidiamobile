@@ -85,6 +85,7 @@ export default function CameraScreen({ navigation, route }) {
   const [event, setEvent]       = useState(null);
   const [profile, setProfile]   = useState(null);
   const [serverName, setServerName] = useState('Central de Mídia');
+  const [serverUrl, setServerUrl] = useState('');
   const [lastThumb, setLastThumb] = useState(null);
   const [queueCount, setQueueCount] = useState(0);
   const [folderStats, setFolderStats] = useState({ files: 0, sizeGB: 0 });
@@ -152,6 +153,7 @@ export default function CameraScreen({ navigation, route }) {
       setEvent(ev);
       setProfile(p);
       if (cfg?.serverName || cfg?.pcName) setServerName(cfg.serverName || cfg.pcName);
+      if (cfg?.serverUrl) setServerUrl(cfg.serverUrl);
       setAutoUpload(settings.autoUpload);
       setWifiOnly(settings.wifiOnly);
       setSaveOriginal(settings.saveOriginal);
@@ -407,11 +409,28 @@ export default function CameraScreen({ navigation, route }) {
 
         {/* ── TOP BAR ── */}
         <View style={styles.topBar}>
+          {/* Botão home — volta pra tela inicial */}
+          <TouchableOpacity
+            style={styles.homeBtn}
+            onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}
+            activeOpacity={0.85}
+            hitSlop={10}
+          >
+            <Image source={IC.chevronDir} style={{ width: 16, height: 16, tintColor: '#fff', transform: [{ rotate: '180deg' }] }} />
+          </TouchableOpacity>
+
           {/* Event chip — agora flex maior pra caber o nome */}
           <TouchableOpacity style={styles.eventChip} onPress={() => navigation.navigate('EventPicker')} activeOpacity={0.85}>
             <View style={styles.eventCover}>
               {event?.coverUrl
-                ? <Image source={{ uri: event.coverUrl }} style={StyleSheet.absoluteFill} />
+                ? <Image
+                    source={{
+                      uri: event.coverUrl.startsWith('http')
+                        ? event.coverUrl
+                        : `${serverUrl}${event.coverUrl}`,
+                    }}
+                    style={StyleSheet.absoluteFill}
+                  />
                 : <LinearGradient colors={['#1E3A8A','#0B1B4F']} style={StyleSheet.absoluteFill} />
               }
             </View>
@@ -701,6 +720,12 @@ const styles = StyleSheet.create({
     borderRadius: 14, padding: 7, flex: 1,
   },
   eventCover: { width: 44, height: 44, borderRadius: 9, overflow: 'hidden', backgroundColor: '#0a1322' },
+  homeBtn: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: 'rgba(8,14,26,0.85)',
+    borderWidth: 1, borderColor: 'rgba(31,139,255,0.32)',
+    alignItems: 'center', justifyContent: 'center',
+  },
   eventInfo: { flex: 1 },
   eventNameRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   eventName: { color: '#fff', fontSize: 13, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.2, flexShrink: 1 },

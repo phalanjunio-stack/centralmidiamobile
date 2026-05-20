@@ -77,9 +77,19 @@ export default function EventPickerScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        {/* Header */}
+        {/* Header com voltar */}
         <View style={styles.header}>
-          <View>
+          {navigation.canGoBack() && (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backBtn}
+              activeOpacity={0.8}
+              hitSlop={10}
+            >
+              <Image source={IC.chevronDir} style={{ width: 18, height: 18, tintColor: '#fff', transform: [{ rotate: '180deg' }] }} />
+            </TouchableOpacity>
+          )}
+          <View style={{ flex: 1 }}>
             <Text style={styles.title}>Qual atividade?</Text>
             <Text style={styles.subtitle}>Eventos, treinamentos e visitas</Text>
           </View>
@@ -227,8 +237,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#03101F' },
 
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+    flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16,
+  },
+  backBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: 'rgba(8,14,26,0.85)',
+    borderWidth: 1, borderColor: 'rgba(31,139,255,0.32)',
+    alignItems: 'center', justifyContent: 'center',
   },
   title: {
     color: '#fff', fontSize: 26, fontFamily: 'Inter_800ExtraBold',
